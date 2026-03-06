@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { AxiosError } from 'axios'
 import { Navbar } from '../components/Navbar.tsx'
@@ -13,11 +13,24 @@ export function UpgradePage() {
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
   const organizations = useOrgStore((state) => state.organizations)
   const fetchUserOrganizations = useOrgStore((state) => state.fetchUserOrganizations)
+  const setActiveOrg = useOrgStore((state) => state.setActiveOrg)
   
   const isLoggedIn = !!accessToken
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [upgradeError, setUpgradeError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return
+    }
+
+    if (organizations.length > 0) {
+      return
+    }
+
+    void fetchUserOrganizations()
+  }, [isLoggedIn, organizations.length, fetchUserOrganizations])
 
   const handleUpgradeClick = () => {
     if (!isLoggedIn) {
@@ -29,16 +42,45 @@ export function UpgradePage() {
   }
 
   const handleConfirmUpgrade = async () => {
-    if (!activeOrgId) {
-      setUpgradeError('Nenhuma organização selecionada')
+    // Fetch organizations if not already loaded
+    let orgsToCheck = organizations
+    if (orgsToCheck.length === 0) {
+      try {
+        await fetchUserOrganizations()
+        orgsToCheck = useOrgStore.getState().organizations
+      } catch {
+        setUpgradeError('Não foi possível carregar as organizações')
+        return
+      }
+    }
+
+    // Filter to only TEAM organizations (PERSONAL orgs cannot be upgraded)
+    const teamOrgs = orgsToCheck.filter((org) => org.org_type === 'team')
+
+    if (teamOrgs.length === 0) {
+      setUpgradeError('Você só possui organizações pessoais. Crie uma organização em equipe para usar o plano PRO.')
       return
+    }
+
+    // Use active org if it's a TEAM org, otherwise use first TEAM org
+    const orgIdForUpgrade = activeOrgId && teamOrgs.some((org) => org.id === activeOrgId)
+      ? activeOrgId
+      : teamOrgs[0]?.id
+
+    if (!orgIdForUpgrade) {
+      setUpgradeError('Nenhuma organização em equipe disponível para upgrade')
+      return
+    }
+
+    if (orgIdForUpgrade !== activeOrgId) {
+      setActiveOrg(orgIdForUpgrade)
     }
 
     setIsUpgrading(true)
     setUpgradeError(null)
 
     try {
-      await upgradeOrganizationPlan(activeOrgId, 'pro')
+      await upgradeOrganizationPlan(orgIdForUpgrade, 'pro')
       // Refresh organizations data to update frontend state
       await fetchUserOrganizations()
       setIsUpgradeModalOpen(false)
@@ -52,6 +94,10 @@ export function UpgradePage() {
       setIsUpgrading(false)
     }
   }
+
+  // Get list of organizations that can be upgraded (TEAM orgs only)
+  const upgradeableOrgs = organizations.filter((org) => org.org_type === 'team')
+  const canUpgrade = upgradeableOrgs.length > 0
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
@@ -278,17 +324,27 @@ export function UpgradePage() {
               </li>
             </ul>
             <div className="mt-8">
-              <button
-                type="button"
-                onClick={handleUpgradeClick}
-                disabled={isUpgradeModalOpen && isUpgrading}
-                className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoggedIn ? 'Aderir ao Plano PRO' : 'Começar com Plano PRO'}
-              </button>
-              <p className="mt-3 text-center text-xs text-slate-500">
-                R$ 49/mês para organizações ilimitadas
-              </p>
+              {isLoggedIn && !canUpgrade ? (
+                <div className="rounded-lg bg-amber-50 p-4 text-center">
+                  <p className="text-sm text-amber-800">
+                    Você só possui organizações pessoais. Crie uma organização em equipe para usar o plano PRO.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleUpgradeClick}
+                    disabled={isUpgradeModalOpen && isUpgrading}
+                    className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoggedIn ? 'Aderir ao Plano PRO' : 'Começar com Plano PRO'}
+                  </button>
+                  <p className="mt-3 text-center text-xs text-slate-500">
+                    R$ 49/mês para organizações ilimitadas
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -332,7 +388,7 @@ export function UpgradePage() {
               <div className="border-t border-slate-200 pt-2 text-sm text-slate-600">
                 <p className="font-semibold text-slate-900">Organização:</p>
                 <p className="mt-1">
-                  {organizations.find((org) => org.id === activeOrgId)?.name || 'Carregando...'}
+                  {upgradeableOrgs.find((org) => org.id === activeOrgId)?.name || upgradeableOrgs[0]?.name || 'Carregando...'}
                 </p>
               </div>
             </div>
