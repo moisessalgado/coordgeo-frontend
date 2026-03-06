@@ -57,12 +57,15 @@ const parseLayerType = (value: unknown): maplibregl.LayerSpecification['type'] |
 const sourceFromDatasource = (
   datasource: Datasource,
 ): maplibregl.SourceSpecification | maplibregl.CanvasSourceSpecification => {
+  // If it's a data URI or inline GeoJSON, treat as geojson source
+  if (datasource.storage_url.startsWith('data:application/json')) {
+    return {
+      type: 'geojson',
+      data: datasource.storage_url,
+    }
+  }
+
   switch (datasource.datasource_type) {
-    case 'geojson':
-      return {
-        type: 'geojson',
-        data: datasource.storage_url,
-      }
     case 'raster':
       return {
         type: 'raster',
@@ -80,11 +83,12 @@ const sourceFromDatasource = (
   }
 }
 
-const defaultLayerType = (datasourceType: Datasource['datasource_type']) => {
-  if (datasourceType === 'raster') {
+const defaultLayerType = (datasource: Datasource) => {
+  if (datasource.datasource_type === 'raster') {
     return 'raster'
   }
-  if (datasourceType === 'geojson') {
+  // Detect inline GeoJSON by data URI
+  if (datasource.storage_url.startsWith('data:application/json')) {
     return 'fill'
   }
   return 'line'
@@ -201,7 +205,7 @@ const toLayerSpec = (
   const styleConfig = isObject(layer.style_config) ? layer.style_config : {}
   const metadata = isObject(datasource.metadata) ? datasource.metadata : {}
 
-  const type = parseLayerType(styleConfig.type) ?? defaultLayerType(datasource.datasource_type)
+  const type = parseLayerType(styleConfig.type) ?? defaultLayerType(datasource)
 
   const spec: Record<string, unknown> = {
     id: layerIdFor(layer.id),
@@ -215,7 +219,9 @@ const toLayerSpec = (
   }
 
   const sourceLayer = parseString(styleConfig['source-layer']) ?? parseString(metadata.source_layer)
-  if (sourceLayer && datasource.datasource_type !== 'geojson') {
+  // Only add source-layer for vector tiles, not for inline GeoJSON
+  const isInlineGeoJson = datasource.storage_url.startsWith('data:application/json')
+  if (sourceLayer && !isInlineGeoJson) {
     spec['source-layer'] = sourceLayer
   }
 
