@@ -34,6 +34,10 @@ export function CreateLayerModal({
 
   if (!isOpen || !geometry) return null
 
+  // Generate suggested names based on existing data
+  const suggestedLayerName = `Layer ${useMapStore.getState().layers.length + 1}`
+  const suggestedProjectName = `Project ${projects.length + 1}`
+
   // Calcular informações da geometria com Turf.js
   const getGeometryInfo = () => {
     if (!geometry) return null
@@ -196,7 +200,7 @@ export function CreateLayerModal({
               required
               disabled={isLoading}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-              placeholder="Ex: Área de estudo"
+              placeholder={suggestedLayerName}
             />
           </div>
 
@@ -254,7 +258,7 @@ export function CreateLayerModal({
                   required
                   disabled={isLoading}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-                  placeholder="Ex: Projeto A"
+                  placeholder={suggestedProjectName}
                 />
               </div>
               <div className="space-y-2">

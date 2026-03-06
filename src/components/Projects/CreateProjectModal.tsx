@@ -14,8 +14,12 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fetchMapData = useMapStore((state) => state.fetchMapData)
+  const projects = useMapStore((state) => state.projects)
 
   if (!isOpen) return null
+
+  // Generate suggested name based on existing projects
+  const suggestedName = `Project ${projects.length + 1}`
 
   const handleSubmit = async (data: { name: string; description: string }) => {
     setError(null)
@@ -61,6 +65,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
         <ProjectForm
           isLoading={isLoading}
           error={error}
+          suggestedName={suggestedName}
           onSubmit={handleSubmit}
           onCancel={isLoading ? undefined : onClose}
         />

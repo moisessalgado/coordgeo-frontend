@@ -4,6 +4,8 @@ import MapboxDraw from 'maplibre-gl-draw'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { DrawControls } from './DrawControls.tsx'
 import { CreateLayerModal } from './CreateLayerModal.tsx'
+import { EditLayerModal } from './EditLayerModal.tsx'
+import { FeatureDetailsPanel } from './FeatureDetailsPanel.tsx'
 import type {
   Datasource,
   GeoJsonFeature,
@@ -20,6 +22,7 @@ interface MapContainerProps {
   datasources: Datasource[]
   projects: Project[]
   isLayerVisible: (layerId: string) => boolean
+  onMapReady?: (zoomToGeometry: (geometry: ProjectGeometry) => void) => void
 }
 
 const sourceIdFor = (datasourceId: string) => `coordgeo-source-${datasourceId}`
@@ -238,17 +241,25 @@ const toLayerSpec = (
   return spec as maplibregl.LayerSpecification
 }
 
-export function MapContainer({ className, layers, datasources, projects, isLayerVisible }: MapContainerProps) {
+export function MapContainer({ className, layers, datasources, projects, isLayerVisible, onMapReady }: MapContainerProps) {
   const mapElement = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
+  const onMapReadyRef = useRef(onMapReady)
   const dynamicSourceIds = useRef<string[]>([])
   const dynamicLayerIds = useRef<string[]>([])
   const hasAppliedInitialBounds = useRef(false)
 
   const [isDrawing, setIsDrawing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [drawnGeometry, setDrawnGeometry] = useState<GeoJsonGeometry | null>(null)
   const [isLayerModalOpen, setIsLayerModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null)
+
+  useEffect(() => {
+    onMapReadyRef.current = onMapReady
+  }, [onMapReady])
 
   const clearDynamicMapData = (map: maplibregl.Map) => {
     dynamicLayerIds.current.forEach((layerId) => {
@@ -286,8 +297,25 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
       displayControlsDefault: false,
       controls: {},
     })
-    mapRef.current.addControl(draw, 'top-left')
+    mapRef.current.addControl(draw as unknown as maplibregl.IControl, 'top-left')
     drawRef.current = draw
+
+    // Expose zoom to geometry function
+    const zoomToGeometry = (geometry: ProjectGeometry) => {
+      if (!mapRef.current || !geometry) return
+
+      const points = extractPointsFromProjectGeometry(geometry)
+      const bounds = boundsFromPoints(points)
+
+      if (bounds) {
+        mapRef.current.fitBounds(bounds, {
+          padding: 40,
+          duration: 1000,
+        })
+      }
+    }
+
+    onMapReadyRef.current?.(zoomToGeometry)
 
     // Listen for draw events
     mapRef.current.on('draw.create', (e) => {
@@ -296,6 +324,17 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
         setDrawnGeometry(feature.geometry as GeoJsonGeometry)
         setIsLayerModalOpen(true)
         setIsDrawing(false)
+        draw.deleteAll()
+      }
+    })
+
+    // Listen for draw update events (when editing existing geometries)
+    mapRef.current.on('draw.update', (e) => {
+      if (e.features && e.features.length > 0) {
+        const feature = e.features[0]
+        setDrawnGeometry(feature.geometry as GeoJsonGeometry)
+        setIsEditModalOpen(true)
+        setIsEditing(false)
         draw.deleteAll()
       }
     })
@@ -384,6 +423,37 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
     }
   }, [datasources, isLayerVisible, layers])
 
+  // Setup click listener for feature details
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) {
+      return
+    }
+
+    const handleMapClick = (e: maplibregl.MapMouseEvent) => {
+      const features = map.queryRenderedFeatures(e.point)
+
+      // Find the first feature that belongs to one of our dynamic layers
+      const clickedFeature = features.find((feature) =>
+        dynamicLayerIds.current.includes(feature.layer.id),
+      )
+
+      if (clickedFeature) {
+        // Find the layer and datasource associated with this feature
+        const layerId = clickedFeature.layer.id.replace('coordgeo-layer-', '')
+        setSelectedLayerId(layerId)
+      } else {
+        setSelectedLayerId(null)
+      }
+    }
+
+    map.on('click', handleMapClick)
+
+    return () => {
+      map.off('click', handleMapClick)
+    }
+  }, [])
+
   const handleDrawPoint = () => {
     if (drawRef.current) {
       drawRef.current.changeMode('draw_point')
@@ -405,13 +475,62 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
     }
   }
 
+  const handleEditLayer = () => {
+    // Verifica se há layers editáveis
+    const editableLayers = layers.filter((layer) => {
+      const datasource = datasources.find((ds) => ds.id === layer.datasource_id)
+      return datasource?.storage_url.startsWith('data:application/json')
+    })
+
+    if (editableLayers.length === 0) {
+      setIsEditModalOpen(true) // Abre o modal que mostrará mensagem de "sem layers"
+      return
+    }
+
+    // Pega a primeira layer editável (ou a última criada)
+    const layerToEdit = editableLayers[editableLayers.length - 1]
+    const datasource = datasources.find((ds) => ds.id === layerToEdit.datasource_id)
+    
+    if (datasource && drawRef.current) {
+      // Decodifica o GeoJSON do data URI
+      try {
+        const dataUrl = datasource.storage_url
+        const jsonPart = dataUrl.split(',')[1]
+        const geojsonString = decodeURIComponent(jsonPart)
+        const geojson = JSON.parse(geojsonString)
+        
+        // Adiciona a feature ao draw control
+        if (geojson.type === 'FeatureCollection' && geojson.features.length > 0) {
+          const feature = geojson.features[0]
+          const featureIds = drawRef.current.add(feature)
+          
+          if (featureIds && featureIds.length > 0) {
+            // Entra em modo de edição direto
+            drawRef.current.changeMode('direct_select', { featureId: featureIds[0] })
+            setIsEditing(true)
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar geometria para edição:', error)
+        setIsEditModalOpen(true)
+      }
+    }
+  }
+
   const handleCancelDraw = () => {
     if (drawRef.current) {
       drawRef.current.changeMode('simple_select')
       drawRef.current.deleteAll()
       setIsDrawing(false)
+      setIsEditing(false)
     }
   }
+
+  // Verifica se há layers editáveis
+  const hasEditableLayers = layers.some((layer) => {
+    const datasource = datasources.find((ds) => ds.id === layer.datasource_id)
+    return datasource?.storage_url.startsWith('data:application/json')
+  })
 
   return (
     <div className="relative h-full w-full">
@@ -422,8 +541,11 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
           onDrawPoint={handleDrawPoint}
           onDrawLineString={handleDrawLineString}
           onDrawPolygon={handleDrawPolygon}
+          onEditLayer={handleEditLayer}
           onCancelDraw={handleCancelDraw}
           isDrawing={isDrawing}
+          isEditing={isEditing}
+          hasEditableLayers={hasEditableLayers}
         />
       </div>
 
@@ -438,6 +560,33 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
         onSuccess={() => {
           setDrawnGeometry(null)
         }}
+      />
+
+      <EditLayerModal
+        isOpen={isEditModalOpen}
+        geometry={drawnGeometry}
+        layers={layers}
+        datasources={datasources}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setDrawnGeometry(null)
+        }}
+        onSuccess={() => {
+          setDrawnGeometry(null)
+        }}
+      />
+
+      <FeatureDetailsPanel
+        layer={selectedLayerId ? layers.find((l) => l.id === selectedLayerId) ?? null : null}
+        datasource={
+          selectedLayerId
+            ? (() => {
+                const layer = layers.find((l) => l.id === selectedLayerId)
+                return layer ? datasources.find((d) => d.id === layer.datasource_id) ?? null : null
+              })()
+            : null
+        }
+        onClose={() => setSelectedLayerId(null)}
       />
     </div>
   )

@@ -3,9 +3,10 @@ import type { Project } from '../../types/geospatial.ts'
 interface ProjectListProps {
   projects: Project[]
   onCreateClick: () => void
+  onZoomToProject?: (project: Project) => void
 }
 
-export function ProjectList({ projects, onCreateClick }: ProjectListProps) {
+export function ProjectList({ projects, onCreateClick, onZoomToProject }: ProjectListProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -35,10 +36,21 @@ export function ProjectList({ projects, onCreateClick }: ProjectListProps) {
           {projects.map((project) => (
             <li
               key={project.id}
-              className="rounded-lg border border-slate-200 bg-white p-3 hover:border-slate-300"
+              className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3 hover:border-slate-300"
             >
-              <h4 className="text-sm font-medium text-slate-900">{project.name}</h4>
-              <p className="mt-1 text-xs text-slate-600 line-clamp-2">{project.description}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-medium text-slate-900">{project.name}</h4>
+                <p className="mt-1 text-xs text-slate-600 line-clamp-2">{project.description}</p>
+              </div>
+              {onZoomToProject && project.geometry && (
+                <button
+                  onClick={() => onZoomToProject(project)}
+                  className="flex-shrink-0 rounded px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                  title="Zoom neste projeto"
+                >
+                  🔍
+                </button>
+              )}
             </li>
           ))}
         </ul>
