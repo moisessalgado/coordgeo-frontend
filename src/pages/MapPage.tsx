@@ -30,8 +30,15 @@ export function MapPage() {
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
   const clearActiveOrg = useOrgStore((state) => state.clearActiveOrg)
   const isFreemium = useOrgStore((state) => state.isFreemium)
+  const organizations = useOrgStore((state) => state.organizations)
 
   const logout = useAuthStore((state) => state.logout)
+
+  // Check if user has PRO/ENTERPRISE plan
+  const hasPremiumPlan = organizations.some(
+    (org) => org.plan === 'PRO' || org.plan === 'ENTERPRISE'
+  )
+  const shouldShowUpgrade = !hasPremiumPlan
 
   useEffect(() => {
     void fetchMapData()
@@ -78,16 +85,18 @@ export function MapPage() {
           </div>
         </div>
 
-        <Link
-          to="/upgrade"
-          className="block rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <span>⭐</span>
-            <span>Aderir ao Plano PRO</span>
-          </div>
-          <p className="mt-1 text-xs text-blue-100">Mais organizações e recursos</p>
-        </Link>
+        {shouldShowUpgrade && (
+          <Link
+            to="/upgrade"
+            className="block rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span>⭐</span>
+              <span>Aderir ao Plano PRO</span>
+            </div>
+            <p className="mt-1 text-xs text-blue-100">Mais organizações e recursos</p>
+          </Link>
+        )}
 
         <p className="text-xs text-slate-500">Falhas de API (sessão): {apiFailureCount}</p>
 

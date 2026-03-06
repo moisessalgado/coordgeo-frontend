@@ -5,8 +5,16 @@ import { useOrgStore } from '../state/orgStore.ts'
 export function LandingPage() {
   const accessToken = useAuthStore((state) => state.accessToken)
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
+  const organizations = useOrgStore((state) => state.organizations)
   const isLoggedIn = !!accessToken
   const hasActiveOrg = !!activeOrgId
+  
+  // Check if user has PRO/ENTERPRISE plan
+  const hasPremiumPlan = organizations.some(
+    (org) => org.plan === 'PRO' || org.plan === 'ENTERPRISE'
+  )
+  const shouldShowUpgrade = !hasPremiumPlan
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
@@ -16,12 +24,14 @@ export function LandingPage() {
             <span className="text-xl font-semibold text-slate-900">CoordGeo</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              to="/upgrade"
-              className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
-            >
-              ⭐ Plano PRO
-            </Link>
+            {shouldShowUpgrade && (
+              <Link
+                to="/upgrade"
+                className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+              >
+                ⭐ Plano PRO
+              </Link>
+            )}
             {isLoggedIn && hasActiveOrg ? (
               <Link
                 to="/map"
