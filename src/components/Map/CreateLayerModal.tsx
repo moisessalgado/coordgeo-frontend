@@ -21,10 +21,10 @@ export function CreateLayerModal({
   onClose,
   onSuccess,
 }: CreateLayerModalProps) {
-  const [name, setName] = useState('')
+  const [name, setName] = useState(suggestedLayerName)
   const [description, setDescription] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState('')
-  const [projectName, setProjectName] = useState('')
+  const [projectName, setProjectName] = useState(suggestedProjectName)
   const [projectDescription, setProjectDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -200,7 +200,6 @@ export function CreateLayerModal({
               required
               disabled={isLoading}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-              placeholder={suggestedLayerName}
             />
           </div>
 
@@ -258,7 +257,6 @@ export function CreateLayerModal({
                   required
                   disabled={isLoading}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-                  placeholder={suggestedProjectName}
                 />
               </div>
               <div className="space-y-2">
