@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { SignupForm } from '../components/Auth/SignupForm.tsx'
+import { Navbar } from '../components/Navbar.tsx'
+import { Footer } from '../components/Footer.tsx'
 import { authService } from '../services/auth.ts'
 import { getUserFacingApiError } from '../services/apiErrors.ts'
 import { useAuthStore } from '../state/authStore.ts'
@@ -34,27 +36,26 @@ export function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <div className="mx-auto mt-20 w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
-        <p className="mb-6 text-sm text-slate-600">
-          Comece a usar o CoordGeo gratuitamente.
-        </p>
-        <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
-        <div className="mt-6 space-y-3">
-          <div className="text-center text-sm text-slate-600">
-            Já tem uma conta?{' '}
-            <Link to="/login" className="font-medium text-slate-900 hover:underline">
-              Fazer login
-            </Link>
-          </div>
-          <div className="border-t border-slate-200 pt-3 text-center">
-            <Link to="/" className="text-sm text-slate-500 hover:text-slate-700 hover:underline">
-              ← Voltar à página inicial
-            </Link>
+    <div className="flex min-h-screen flex-col bg-slate-100">
+      <Navbar />
+      <main className="flex flex-1 flex-col justify-center p-6">
+        <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
+          <p className="mb-6 text-sm text-slate-600">
+            Comece a usar o CoordGeo gratuitamente.
+          </p>
+          <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
+          <div className="mt-6 space-y-3">
+            <div className="text-center text-sm text-slate-600">
+              Já tem uma conta?{' '}
+              <Link to="/login" className="font-medium text-slate-900 hover:underline">
+                Fazer login
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+      <Footer />
+    </div>
   )
 }

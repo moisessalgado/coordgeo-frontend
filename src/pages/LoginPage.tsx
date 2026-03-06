@@ -1,5 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { LoginForm } from '../components/Auth/LoginForm.tsx'
+import { Navbar } from '../components/Navbar.tsx'
+import { Footer } from '../components/Footer.tsx'
 import { useAuthStore } from '../state/authStore.ts'
 import { useOrgStore } from '../state/orgStore.ts'
 
@@ -40,8 +42,10 @@ export function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <div className="mx-auto mt-20 w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="flex min-h-screen flex-col bg-slate-100">
+      <Navbar />
+      <main className="flex flex-1 flex-col justify-center p-6">
+        <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="mb-1 text-2xl font-semibold text-slate-900">CoordGeo</h1>
         <p className="mb-6 text-sm text-slate-600">Acesse sua conta para continuar.</p>
         
@@ -79,11 +83,6 @@ export function LoginPage() {
               Criar conta
             </Link>
           </div>
-          <div className="border-t border-slate-200 pt-3 text-center">
-            <Link to="/" className="text-sm text-slate-500 hover:text-slate-700 hover:underline">
-              ← Voltar à página inicial
-            </Link>
-          </div>
           {shouldShowUpgrade && (
             <div className="mt-4 text-center">
               <Link
@@ -96,7 +95,9 @@ export function LoginPage() {
             </div>
           )}
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </div>
   )
 }

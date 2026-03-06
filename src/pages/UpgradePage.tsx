@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { AxiosError } from 'axios'
+import { Navbar } from '../components/Navbar.tsx'
+import { Footer } from '../components/Footer.tsx'
 import { useAuthStore } from '../state/authStore.ts'
 import { useOrgStore } from '../state/orgStore.ts'
 import { upgradeOrganizationPlan } from '../services/organizations.ts'
@@ -52,45 +54,21 @@ export function UpgradePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-slate-900"></div>
-            <span className="text-xl font-semibold text-slate-900">CoordGeo</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            {isLoggedIn && activeOrgId ? (
-              <Link
-                to="/map"
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                Voltar ao mapa
-              </Link>
-            ) : (
-              <Link
-                to="/"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Voltar
-              </Link>
-            )}
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
+      <Navbar />
+      <main className="flex-1">
+        <section className="mx-auto max-w-6xl px-6 py-16">
+          <div className="mb-12 text-center">
+            <h1 className="mb-4 text-4xl font-bold text-slate-900">
+              Upgrade para o Plano
+              <span className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                PRO
+              </span>
+            </h1>
+            <p className="text-lg text-slate-600">
+              Desbloqueie recursos avançados e colaboração em equipe
+            </p>
           </div>
-        </div>
-      </nav>
-
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-slate-900">
-            Upgrade para o Plano
-            <span className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              PRO
-            </span>
-          </h1>
-          <p className="text-lg text-slate-600">
-            Desbloqueie recursos avançados e colaboração em equipe
-          </p>
-        </div>
 
         <div className="grid gap-8 md:grid-cols-2">
           {/* Plano FREE */}
@@ -380,6 +358,8 @@ export function UpgradePage() {
           </div>
         </div>
       )}
-    </main>
+      </main>
+      <Footer />
+    </div>
   )
 }

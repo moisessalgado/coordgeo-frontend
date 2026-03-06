@@ -111,7 +111,7 @@ Critério de conclusão: ✅ PASSED
 ---
 
 ### ⏳ Fase J — CRUD de Dados (EM ANDAMENTO)
-**Status: Sprint 1 CONCLUÍDA**
+**Status: Sprint 1, 2, 3 e 4 CONCLUÍDAS**
 
 Objetivo: usuários conseguem criar e editar projetos, layers e datasources.
 
@@ -145,60 +145,97 @@ Entregas por sprint:
      - `CreateLayerModal.tsx`: Modal com form e cálculos geométricos
    - **Serviços:** Métodos `createLayer()` e `createDatasource()` no `geodataService`
 
-3. **Sprint 3 — Editar geometrias**
-   - Habilitar edição de layers existentes
-   - Modo edição do maplibre-gl-draw
-   - PUT para atualizar geometria
-   - Recalcular métricas com Turf.js
+3. **✅ Sprint 3 — Editar geometrias (CONCLUÍDO)**
+   - ✅ Botão "Editar" nos controles de desenho
+   - ✅ Modo de edição do maplibre-gl-draw (direct_select)
+   - ✅ Carrega geometria existente para edição
+   - ✅ PATCH para atualizar geometria e metadados
+   - ✅ Recalcula métricas com Turf.js após edição
+   - ✅ Suporte apenas para layers desenhadas (GeoJSON inline)
+   - ✅ Cria novo datasource e atualiza layer (versionamento de geometrias)
+   - **Componentes criados:**
+     - `EditLayerModal.tsx`: Modal para selecionar e editar layer
+   - **Componentes atualizados:**
+     - `DrawControls.tsx`: Adicionado botão e estado de edição
+     - `MapContainer.tsx`: Integração completa do fluxo de edição
+   - **Serviços:** Método `updateLayer()` adicionado ao `geodataService`
 
-4. **Sprint 4 — Deletar layers**
-   - Confirmação de exclusão
-   - DELETE `/api/v1/layers/`
-   - Cascata para datasources órfãos (opcional)
+4. **✅ Sprint 4 — Deletar layers (CONCLUÍDO)**
+   - ✅ Botão 🗑️ de exclusão na lista de layers
+   - ✅ Modal de confirmação de deleção
+   - ✅ DELETE `/api/v1/layers/:id/`
+   - ✅ Feedback visual (loading state)
+   - ✅ Refresh automático do mapa após deleção
+   - ✅ Tratamento de erros com mensagem user-friendly
+   - **Componentes criados:**
+     - `DeleteLayerModal.tsx`: Modal de confirmação de deleção
+   - **Componentes atualizados:**
+     - `LayerToggle.tsx`: Adicionado botão de deleção ao lado de cada layer
+     - `MapPage.tsx`: Integração do modal de deleção
+   - **Serviços:** Método `deleteLayer()` adicionado ao `geodataService`
 
-Critério de conclusão: ✅ Sprint 1 e 2 CONCLUÍDAS
+Critério de conclusão: ✅ Sprint 1, 2, 3 e 4 CONCLUÍDAS
 - ✅ Usuário consegue criar projetos
 - ✅ Usuário desenha geometrias no mapa (ponto, linha, polígono)
 - ✅ Geometrias são salvas como layers vinculadas a projetos
 - ✅ Datasources GeoJSON criados automaticamente
 - ✅ Cálculos de área/perímetro exibidos
-- ⏳ Pendente: Edição e deleção de layers
+- ✅ Usuário consegue editar geometrias de layers existentes
+- ✅ Edição atualiza datasource e recalcula métricas
+- ✅ Usuário consegue deletar layers com confirmação
+- ✅ CRUD completo de layers
 
 ---
 
-### ⏳ Fase K — Melhorias de UX (Mapa + UI) (FUTURO)
-**Status: POR FAZER**
+### ⏳ Fase K — Melhorias de UX (Mapa + UI) (EM ANDAMENTO)
+**Status: Sprint 1 iniciada**
 
 Objetivo: melhorar experiência de uso e interação.
 
-Entregas:
-1. **Interação com o mapa**
-   - Click em features mostra detalhes
-   - Zoom em geometria de projeto
-   - Busca e filtro de layers/projetos
+Entregas por sprint:
 
-2. **Dashboard/Sidebar melhorado**
-   - Stats por organização (projetos, layers, datasources)
-   - Listagem de layers com thumbnails/preview
+1. **✅ Sprint 1 — Interação com features (CONCLUÍDO)**
+   - ✅ Click em features no mapa mostra detalhes
+   - ✅ Painel com informações da layer/datasource
+   - ✅ Zoom em geometria de projeto com botão
+   - ✅ Animação suave de zoom com duração de 1s
+   - **Componentes criados:**
+     - `FeatureDetailsPanel.tsx`: Painel com detalhes da layer ao clicar
+   - **Componentes atualizados:**
+     - `MapContainer.tsx`: Listener de click para features
+     - `ProjectList.tsx`: Adicionado botão 🔍 para zoom
+     - `MapPage.tsx`: Integração do zoom de projetos
+   - **Funcionalidades:**
+     - Click em feature mostra painel com nome, descrição, datasource type e metadados
+     - Botão zoom em lado de cada projeto (se tiver geometria)
+     - Calcular bounds automático e fazer fitBounds com padding
+
+2. **Sprint 2 — Busca e filtro**
+   - Busca por nome de projeto/layer
    - Filtro por tipo de datasource
+   - Aplicar filtros em real-time na UI
 
-3. **Responsividade**
-   - Layout mobile-friendly
-   - Sidebar colapsável em mobile
+3. **Sprint 3 — Dashboard melhorado**
+   - Stats de projetos, layers, datasources por org
+   - Cards com informações resumidas
+   - Miniatura/preview de layers
 
-4. **Temas e acessibilidade**
+4. **Sprint 4 — Responsividade mobile**
+   - Layout colapsável em mobile
+   - Touch-friendly controls
+   - Responsive sidebar
+
+5. **Sprint 5 — Temas e acessibilidade**
    - Dark mode
-   - Melhor contraste
+   - Melhor contraste (WCAG AA)
    - ARIA labels
 
-5. **Performance**
-   - Lazy loading de dados
-   - Caching estratégico
-
-Critério de conclusão: A definir
-- App funciona bem em mobile e desktop
-- Mapa responsivo e interativo
-- Acessibilidade em nível AA (WCAG)
+Critério de conclusão Sprint 1: ✅ PASSED
+- ✅ Click em feature mostra painel
+- ✅ Painel exibe informações corretas
+- ✅ Botão de zoom em projetos funciona
+- ✅ Zoom com animação suave
+- ✅ Zoom funciona com qualquer tipo de geometria
 
 ---
 

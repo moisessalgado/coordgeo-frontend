@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { OrgSelector } from '../components/Auth/OrgSelector.tsx'
+import { Navbar } from '../components/Navbar.tsx'
+import { Footer } from '../components/Footer.tsx'
 import { useOrgStore } from '../state/orgStore.ts'
 
 export function OrgSelectPage() {
@@ -53,42 +55,54 @@ export function OrgSelectPage() {
   // Se é freemium, mostrar loading enquanto busca org padrão
   if (isFreemium && isLoading) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6">
-        <div className="mx-auto mt-20 w-full max-w-2xl text-center">
-          <div className="rounded-xl border border-slate-200 bg-white p-8">
-            <p className="text-slate-600">Configurando seu workspace...</p>
+      <div className="flex min-h-screen flex-col bg-slate-100">
+        <Navbar />
+        <main className="flex flex-1 flex-col justify-center p-6">
+          <div className="mx-auto w-full max-w-2xl text-center">
+            <div className="rounded-xl border border-slate-200 bg-white p-8">
+              <p className="text-slate-600">Configurando seu workspace...</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+        <Footer />
+      </div>
     )
   }
 
   // Se é freemium e não conseguiu carregar, mostrar erro
   if (isFreemium && error) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6">
-        <div className="mx-auto mt-20 w-full max-w-2xl text-center">
-          <div className="rounded-xl border border-red-200 bg-white p-8">
-            <p className="text-red-600">{error}</p>
+      <div className="flex min-h-screen flex-col bg-slate-100">
+        <Navbar />
+        <main className="flex flex-1 flex-col justify-center p-6">
+          <div className="mx-auto w-full max-w-2xl text-center">
+            <div className="rounded-xl border border-red-200 bg-white p-8">
+              <p className="text-red-600">{error}</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+        <Footer />
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <div className="mx-auto mt-20 w-full max-w-2xl">
-        <OrgSelector
-          organizations={organizations}
-          activeOrgId={activeOrgId}
-          isLoading={isLoading}
-          error={error}
-          onSelect={setActiveOrg}
-          onContinue={handleContinue}
-          onReload={fetchUserOrganizations}
-        />
-      </div>
-    </main>
+    <div className="flex min-h-screen flex-col bg-slate-100">
+      <Navbar />
+      <main className="flex flex-1 flex-col justify-center p-6">
+        <div className="mx-auto w-full max-w-2xl">
+          <OrgSelector
+            organizations={organizations}
+            activeOrgId={activeOrgId}
+            isLoading={isLoading}
+            error={error}
+            onSelect={setActiveOrg}
+            onContinue={handleContinue}
+            onReload={fetchUserOrganizations}
+          />
+        </div>
+      </main>
+      <Footer />
+    </div>
   )
 }
