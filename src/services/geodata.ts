@@ -198,4 +198,51 @@ export const geodataService = {
       is_public: response.data.is_public,
     } satisfies Datasource
   },
+
+  async createProjectAndLayer(data: {
+    projectName: string
+    projectDescription: string
+    layerName: string
+    layerDescription: string
+    geometry: ProjectGeometry
+    style_config?: Record<string, unknown>
+  }) {
+    // 1. Create project
+    const project = await this.createProject({
+      name: data.projectName,
+      description: data.projectDescription,
+    })
+
+    // 2. Create datasource GeoJSON
+    const geojsonString = JSON.stringify({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: data.geometry,
+          properties: {},
+        },
+      ],
+    })
+
+    const datasource = await this.createDatasource({
+      name: `${data.layerName} - Datasource`,
+      description: `GeoJSON inline para ${data.layerName}`,
+      datasource_type: 'geojson',
+      storage_url: `data:application/json,${encodeURIComponent(geojsonString)}`,
+      metadata: { source: 'draw', created_at: new Date().toISOString() },
+    })
+
+    // 3. Create layer
+    await this.createLayer({
+      name: data.layerName,
+      description: data.layerDescription,
+      project_id: project.id,
+      datasource_id: datasource.id,
+      style_config: data.style_config,
+      metadata: { drawn: true, geometryType: (data.geometry as any).type },
+    })
+
+    return project
+  },
 }

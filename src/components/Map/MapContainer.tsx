@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import MapboxDraw from 'maplibre-gl-draw'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import 'maplibre-gl-draw/dist/maplibre-gl-draw.css'
 import { DrawControls } from './DrawControls.tsx'
 import { CreateLayerModal } from './CreateLayerModal.tsx'
 import type {

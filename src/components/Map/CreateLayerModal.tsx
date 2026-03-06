@@ -24,9 +24,13 @@ export function CreateLayerModal({
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState('')
+  const [projectName, setProjectName] = useState('')
+  const [projectDescription, setProjectDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fetchMapData = useMapStore((state) => state.fetchMapData)
+
+  const hasProjects = projects.length > 0
 
   if (!isOpen || !geometry) return null
 
@@ -68,40 +72,55 @@ export function CreateLayerModal({
     setIsLoading(true)
 
     try {
-      // 1. Criar datasource GeoJSON inline
-      const geojsonString = JSON.stringify({
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry,
-            properties: {},
+      if (!hasProjects) {
+        // Create project and layer together
+        await geodataService.createProjectAndLayer({
+          projectName,
+          projectDescription,
+          layerName: name,
+          layerDescription: description,
+          geometry,
+          style_config: {
+            type: geometry.type.toLowerCase().replace('string', ''),
+            paint: getDefaultPaint(geometry.type),
           },
-        ],
-      })
+        })
+      } else {
+        // Create datasource GeoJSON inline
+        const geojsonString = JSON.stringify({
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry,
+              properties: {},
+            },
+          ],
+        })
 
-      const datasource = await geodataService.createDatasource({
-        name: `${name} - Datasource`,
-        description: `GeoJSON inline para ${name}`,
-        datasource_type: 'geojson',
-        storage_url: `data:application/json,${encodeURIComponent(geojsonString)}`,
-        metadata: { source: 'draw', created_at: new Date().toISOString() },
-      })
+        const datasource = await geodataService.createDatasource({
+          name: `${name} - Datasource`,
+          description: `GeoJSON inline para ${name}`,
+          datasource_type: 'geojson',
+          storage_url: `data:application/json,${encodeURIComponent(geojsonString)}`,
+          metadata: { source: 'draw', created_at: new Date().toISOString() },
+        })
 
-      // 2. Criar layer vinculada ao datasource
-      await geodataService.createLayer({
-        name,
-        description,
-        project_id: selectedProjectId,
-        datasource_id: datasource.id,
-        style_config: {
-          type: geometry.type.toLowerCase().replace('string', ''),
-          paint: getDefaultPaint(geometry.type),
-        },
-        metadata: { drawn: true, geometryType: geometry.type },
-      })
+        // Create layer vinculada ao datasource
+        await geodataService.createLayer({
+          name,
+          description,
+          project_id: selectedProjectId,
+          datasource_id: datasource.id,
+          style_config: {
+            type: geometry.type.toLowerCase().replace('string', ''),
+            paint: getDefaultPaint(geometry.type),
+          },
+          metadata: { drawn: true, geometryType: geometry.type },
+        })
+      }
 
-      // 3. Refresh map data
+      // Refresh map data
       await fetchMapData()
 
       onSuccess?.()
@@ -197,26 +216,63 @@ export function CreateLayerModal({
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="layer-project" className="block text-sm font-medium text-slate-700">
-              Projeto
-            </label>
-            <select
-              id="layer-project"
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-            >
-              <option value="">Selecione um projeto</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {hasProjects ? (
+            <div className="space-y-2">
+              <label htmlFor="layer-project" className="block text-sm font-medium text-slate-700">
+                Projeto
+              </label>
+              <select
+                id="layer-project"
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                required
+                disabled={isLoading}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
+              >
+                <option value="">Selecione um projeto</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <>
+              <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
+                Você não tem nenhum projeto. Crie um novo para esta layer.
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="project-name" className="block text-sm font-medium text-slate-700">
+                  Nome do projeto
+                </label>
+                <input
+                  id="project-name"
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
+                  placeholder="Ex: Projeto A"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="project-description" className="block text-sm font-medium text-slate-700">
+                  Descrição do projeto
+                </label>
+                <textarea
+                  id="project-description"
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  disabled={isLoading}
+                  rows={2}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
+                  placeholder="Descrição do projeto (opcional)"
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex items-center justify-end gap-3">
             <button
@@ -229,7 +285,10 @@ export function CreateLayerModal({
             </button>
             <button
               type="submit"
-              disabled={isLoading || !selectedProjectId}
+              disabled={
+                isLoading ||
+                (!hasProjects ? !projectName : !selectedProjectId)
+              }
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
             >
               {isLoading ? 'Salvando...' : 'Salvar layer'}
