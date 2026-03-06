@@ -44,27 +44,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <PublicOnlyGuard>
-              <LandingPage />
-            </PublicOnlyGuard>
-          }
-        />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/signup"
           element={
             <PublicOnlyGuard>
               <SignupPage />
-            </PublicOnlyGuard>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <PublicOnlyGuard>
-              <LoginPage />
             </PublicOnlyGuard>
           }
         />

@@ -1,6 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '../state/authStore.ts'
+import { useOrgStore } from '../state/orgStore.ts'
 
 export function LandingPage() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const activeOrgId = useOrgStore((state) => state.activeOrgId)
+  const isLoggedIn = !!accessToken
+  const hasActiveOrg = !!activeOrgId
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
@@ -10,18 +16,29 @@ export function LandingPage() {
             <span className="text-xl font-semibold text-slate-900">CoordGeo</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Criar conta
-            </Link>
+            {isLoggedIn && hasActiveOrg ? (
+              <Link
+                to="/map"
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Ir para o mapa
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Criar conta
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -40,18 +57,29 @@ export function LandingPage() {
             escalável e construído com tecnologias modernas.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link
-              to="/signup"
-              className="rounded-lg bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-slate-800"
-            >
-              Começar agora
-            </Link>
-            <Link
-              to="/login"
-              className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Já tenho conta
-            </Link>
+            {isLoggedIn && hasActiveOrg ? (
+              <Link
+                to="/map"
+                className="rounded-lg bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-slate-800"
+              >
+                Acessar mapa
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="rounded-lg bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-slate-800"
+                >
+                  Começar agora
+                </Link>
+                <Link
+                  to="/login"
+                  className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Já tenho conta
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
