@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @import "maplibre-gl-draw/dist/mapbox-gl-draw.css";
+
+html {
+	scrollbar-gutter: stable;
+}
