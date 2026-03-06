@@ -1,11 +1,55 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../state/authStore.ts'
 import { useOrgStore } from '../state/orgStore.ts'
+import { upgradeOrganizationPlan } from '../services/organizations.ts'
 
 export function UpgradePage() {
+  const navigate = useNavigate()
   const accessToken = useAuthStore((state) => state.accessToken)
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
+  const organizations = useOrgStore((state) => state.organizations)
+  const fetchUserOrganizations = useOrgStore((state) => state.fetchUserOrganizations)
+  
   const isLoggedIn = !!accessToken
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [isUpgrading, setIsUpgrading] = useState(false)
+  const [upgradeError, setUpgradeError] = useState<string | null>(null)
+
+  const handleUpgradeClick = () => {
+    if (!isLoggedIn) {
+      navigate('/signup')
+      return
+    }
+    setIsUpgradeModalOpen(true)
+    setUpgradeError(null)
+  }
+
+  const handleConfirmUpgrade = async () => {
+    if (!activeOrgId) {
+      setUpgradeError('Nenhuma organização selecionada')
+      return
+    }
+
+    setIsUpgrading(true)
+    setUpgradeError(null)
+
+    try {
+      await upgradeOrganizationPlan(activeOrgId, 'pro')
+      // Refresh organizations data to update frontend state
+      await fetchUserOrganizations()
+      setIsUpgradeModalOpen(false)
+      navigate('/map', { replace: true })
+    } catch (error: any) {
+      setUpgradeError(
+        error.response?.data?.detail ||
+        error.message ||
+        'Erro ao fazer upgrade do plano'
+      )
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -258,12 +302,14 @@ export function UpgradePage() {
             <div className="mt-8">
               <button
                 type="button"
-                className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+                onClick={handleUpgradeClick}
+                disabled={isUpgradeModalOpen && isUpgrading}
+                className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Em breve
+                {isLoggedIn ? 'Aderir ao Plano PRO' : 'Começar com Plano PRO'}
               </button>
               <p className="mt-3 text-center text-xs text-slate-500">
-                Pagamento e ativação de planos em desenvolvimento
+                R$ 49/mês para organizações ilimitadas
               </p>
             </div>
           </div>
@@ -282,6 +328,58 @@ export function UpgradePage() {
           </a>
         </div>
       </section>
+
+      {/* Upgrade Modal */}
+      {isUpgradeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+            <h2 className="mb-2 text-2xl font-bold text-slate-900">
+              Aderir ao Plano PRO
+            </h2>
+            <p className="mb-6 text-slate-600">
+              Você está prestes a fazer upgrade da sua organização para o plano PRO
+            </p>
+
+            {upgradeError && (
+              <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                {upgradeError}
+              </div>
+            )}
+
+            <div className="mb-6 space-y-2 rounded-lg bg-slate-50 p-4">
+              <div className="text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">Preço:</p>
+                <p className="mt-1">R$ 49 por mês</p>
+              </div>
+              <div className="border-t border-slate-200 pt-2 text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">Organização:</p>
+                <p className="mt-1">
+                  {organizations.find((org) => org.id === activeOrgId)?.name || 'Carregando...'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsUpgradeModalOpen(false)}
+                disabled={isUpgrading}
+                className="flex-1 rounded-lg border-2 border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmUpgrade}
+                disabled={isUpgrading}
+                className="flex-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpgrading ? 'Processando...' : 'Confirmar Upgrade'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
