@@ -41,11 +41,18 @@ export function SignupPage() {
           Comece a usar o CoordGeo gratuitamente.
         </p>
         <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
-        <div className="mt-4 text-center text-sm text-slate-600">
-          Já tem uma conta?{' '}
-          <Link to="/login" className="font-medium text-slate-900 hover:underline">
-            Fazer login
-          </Link>
+        <div className="mt-6 space-y-3">
+          <div className="text-center text-sm text-slate-600">
+            Já tem uma conta?{' '}
+            <Link to="/login" className="font-medium text-slate-900 hover:underline">
+              Fazer login
+            </Link>
+          </div>
+          <div className="border-t border-slate-200 pt-3 text-center">
+            <Link to="/" className="text-sm text-slate-500 hover:text-slate-700 hover:underline">
+              ← Voltar à página inicial
+            </Link>
+          </div>
         </div>
       </div>
     </main>
