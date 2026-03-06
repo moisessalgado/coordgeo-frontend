@@ -4,6 +4,7 @@ import { LandingPage } from './pages/LandingPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
 import { SignupPage } from './pages/SignupPage.tsx'
 import { OrgSelectPage } from './pages/OrgSelectPage.tsx'
+import { UpgradePage } from './pages/UpgradePage.tsx'
 import { useAuthStore } from './state/authStore.ts'
 import { useOrgStore } from './state/orgStore.ts'
 
@@ -46,6 +47,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/upgrade" element={<UpgradePage />} />
         <Route
           path="/signup"
           element={

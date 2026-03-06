@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { LayerToggle } from '../components/Map/LayerToggle.tsx'
 import { MapContainer } from '../components/Map/MapContainer.tsx'
 import { ProjectList } from '../components/Projects/ProjectList.tsx'
@@ -77,6 +77,17 @@ export function MapPage() {
             <p>Datasources</p>
           </div>
         </div>
+
+        <Link
+          to="/upgrade"
+          className="block rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <span>⭐</span>
+            <span>Aderir ao Plano PRO</span>
+          </div>
+          <p className="mt-1 text-xs text-blue-100">Mais organizações e recursos</p>
+        </Link>
 
         <p className="text-xs text-slate-500">Falhas de API (sessão): {apiFailureCount}</p>
 

@@ -76,6 +76,15 @@ export function LoginPage() {
               ← Voltar à página inicial
             </Link>
           </div>
+          <div className="mt-4 text-center">
+            <Link
+              to="/upgrade"
+              className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+            >
+              <span>⭐</span>
+              <span>Aderir ao Plano PRO</span>
+            </Link>
+          </div>
         </div>
       </div>
     </main>

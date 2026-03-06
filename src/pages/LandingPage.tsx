@@ -16,6 +16,12 @@ export function LandingPage() {
             <span className="text-xl font-semibold text-slate-900">CoordGeo</span>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/upgrade"
+              className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+            >
+              ⭐ Plano PRO
+            </Link>
             {isLoggedIn && hasActiveOrg ? (
               <Link
                 to="/map"
