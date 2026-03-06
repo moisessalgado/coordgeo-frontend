@@ -6,10 +6,13 @@ import { Footer } from '../components/Footer.tsx'
 import { authService } from '../services/auth.ts'
 import { getUserFacingApiError } from '../services/apiErrors.ts'
 import { useAuthStore } from '../state/authStore.ts'
+import { useOrgStore } from '../state/orgStore.ts'
 
 export function SignupPage() {
   const navigate = useNavigate()
   const loginAfterSignup = useAuthStore((state) => state.login)
+  const clearOrgSession = useOrgStore((state) => state.clearOrgSession)
+  const resolveAndSetActiveOrg = useOrgStore((state) => state.resolveAndSetActiveOrg)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,10 +21,18 @@ export function SignupPage() {
     setIsLoading(true)
 
     try {
+      clearOrgSession()
       await authService.signup(email, password)
       
       // Fazer login automaticamente após signup
       await loginAfterSignup(email, password)
+
+      const resolvedOrgId = await resolveAndSetActiveOrg()
+      if (resolvedOrgId) {
+        navigate('/map', { replace: true })
+        return
+      }
+
       navigate('/select-org', { replace: true })
     } catch (err) {
       setError(
