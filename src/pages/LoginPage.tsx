@@ -12,7 +12,7 @@ export function LoginPage() {
   const clearError = useAuthStore((state) => state.clearError)
   const accessToken = useAuthStore((state) => state.accessToken)
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
-  const clearActiveOrg = useOrgStore((state) => state.clearActiveOrg)
+  const clearOrgSession = useOrgStore((state) => state.clearOrgSession)
   const organizations = useOrgStore((state) => state.organizations)
 
   const isLoggedIn = !!accessToken
@@ -25,11 +25,12 @@ export function LoginPage() {
 
   const handleLogout = () => {
     logout()
-    clearActiveOrg()
+    clearOrgSession()
   }
 
   const handleSubmit = async (email: string, password: string) => {
     clearError()
+    clearOrgSession()
     try {
       await login(email, password)
       navigate('/select-org', { replace: true })

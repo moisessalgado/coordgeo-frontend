@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import type { AxiosError } from 'axios'
 import { useAuthStore } from '../state/authStore.ts'
 import { useOrgStore } from '../state/orgStore.ts'
 import { upgradeOrganizationPlan } from '../services/organizations.ts'
@@ -40,12 +41,11 @@ export function UpgradePage() {
       await fetchUserOrganizations()
       setIsUpgradeModalOpen(false)
       navigate('/map', { replace: true })
-    } catch (error: any) {
-      setUpgradeError(
-        error.response?.data?.detail ||
-        error.message ||
-        'Erro ao fazer upgrade do plano'
-      )
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ detail?: string }>
+      const detail = axiosError.response?.data?.detail
+      const message = error instanceof Error ? error.message : null
+      setUpgradeError(detail || message || 'Erro ao fazer upgrade do plano')
     } finally {
       setIsUpgrading(false)
     }

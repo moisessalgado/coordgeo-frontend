@@ -11,6 +11,7 @@ interface OrgState {
   isFreemium: boolean
   setActiveOrg: (orgId: string) => void
   clearActiveOrg: () => void
+  clearOrgSession: () => void
   fetchUserOrganizations: () => Promise<void>
   fetchAndSetDefaultOrg: () => Promise<void>
   clearError: () => void
@@ -57,6 +58,17 @@ export const useOrgStore = create<OrgState>((set) => ({
   clearActiveOrg: () => {
     safeStorageRemove(ORG_KEY)
     set({ activeOrgId: null })
+  },
+
+  clearOrgSession: () => {
+    safeStorageRemove(ORG_KEY)
+    set({
+      activeOrgId: null,
+      organizations: [],
+      isFreemium: false,
+      isLoading: false,
+      error: null,
+    })
   },
 
   fetchUserOrganizations: async () => {

@@ -23,10 +23,8 @@ export function OrgSelectPage() {
       }
     }
 
-    if (organizations.length === 0) {
-      void loadOrganizations()
-    }
-  }, [fetchUserOrganizations, organizations.length])
+    void loadOrganizations()
+  }, [fetchUserOrganizations])
 
   // Se usuário freemium (sem orgs visíveis), auto-selecionar org padrão
   useEffect(() => {

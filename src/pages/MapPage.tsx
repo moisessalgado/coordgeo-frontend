@@ -29,6 +29,7 @@ export function MapPage() {
 
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
   const clearActiveOrg = useOrgStore((state) => state.clearActiveOrg)
+  const clearOrgSession = useOrgStore((state) => state.clearOrgSession)
   const isFreemium = useOrgStore((state) => state.isFreemium)
   const organizations = useOrgStore((state) => state.organizations)
 
@@ -62,7 +63,7 @@ export function MapPage() {
 
   const handleLogout = () => {
     logout()
-    clearActiveOrg()
+    clearOrgSession()
     navigate('/login', { replace: true })
   }
 
