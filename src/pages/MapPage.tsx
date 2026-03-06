@@ -4,15 +4,19 @@ import { LayerToggle } from '../components/Map/LayerToggle.tsx'
 import { MapContainer } from '../components/Map/MapContainer.tsx'
 import { ProjectList } from '../components/Projects/ProjectList.tsx'
 import { CreateProjectModal } from '../components/Projects/CreateProjectModal.tsx'
+import { DeleteLayerModal } from '../components/Map/DeleteLayerModal.tsx'
 import { getApiFailureTelemetry } from '../services/apiErrors.ts'
 import { useAuthStore } from '../state/authStore.ts'
 import { useMapStore } from '../state/mapStore.ts'
 import { useOrgStore } from '../state/orgStore.ts'
+import type { Layer, ProjectGeometry } from '../types/geospatial.ts'
 
 export function MapPage() {
   const navigate = useNavigate()
   const [apiFailureCount, setApiFailureCount] = useState(() => getApiFailureTelemetry().totalFailures)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [layerToDelete, setLayerToDelete] = useState<Layer | null>(null)
+  const [zoomToGeometry, setZoomToGeometry] = useState<((geometry: ProjectGeometry) => void) | null>(null)
 
   const fetchMapData = useMapStore((state) => state.fetchMapData)
   const isLoading = useMapStore((state) => state.isLoading)
@@ -25,6 +29,7 @@ export function MapPage() {
 
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
   const clearActiveOrg = useOrgStore((state) => state.clearActiveOrg)
+  const isFreemium = useOrgStore((state) => state.isFreemium)
 
   const logout = useAuthStore((state) => state.logout)
 
@@ -75,18 +80,29 @@ export function MapPage() {
 
         <p className="text-xs text-slate-500">Falhas de API (sessão): {apiFailureCount}</p>
 
-        <ProjectList projects={projects} onCreateClick={() => setIsCreateModalOpen(true)} />
+        <ProjectList 
+          projects={projects} 
+          onCreateClick={() => setIsCreateModalOpen(true)}
+          onZoomToProject={(project) => zoomToGeometry?.(project.geometry)}
+        />
 
-        <LayerToggle layers={layers} isLayerVisible={isLayerVisible} onToggle={toggleLayerVisibility} />
+        <LayerToggle 
+          layers={layers} 
+          isLayerVisible={isLayerVisible} 
+          onToggle={toggleLayerVisibility}
+          onDelete={(layer) => setLayerToDelete(layer)}
+        />
 
         <div className="mt-auto space-y-2">
-          <button
-            type="button"
-            onClick={handleSwitchOrg}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
-          >
-            Trocar organização
-          </button>
+          {!isFreemium && (
+            <button
+              type="button"
+              onClick={handleSwitchOrg}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
+            >
+              Trocar organização
+            </button>
+          )}
           <button
             type="button"
             onClick={handleLogout}
@@ -104,6 +120,7 @@ export function MapPage() {
           datasources={datasources}
           projects={projects}
           isLayerVisible={isLayerVisible}
+          onMapReady={setZoomToGeometry}
         />
 
         {isLoading ? (
@@ -131,6 +148,12 @@ export function MapPage() {
       <CreateProjectModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      <DeleteLayerModal
+        isOpen={layerToDelete !== null}
+        layer={layerToDelete}
+        onClose={() => setLayerToDelete(null)}
       />
     </main>
   )

@@ -42,13 +42,12 @@ export function ProjectForm({ isLoading, error, suggestedName = '', onSubmit, on
 
       <div className="space-y-2">
         <label htmlFor="project-description" className="block text-sm font-medium text-slate-700">
-          Descrição
+          Descrição <span className="text-slate-500">(opcional)</span>
         </label>
         <textarea
           id="project-description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          required
           disabled={isLoading}
           rows={3}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"

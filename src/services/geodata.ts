@@ -159,6 +159,45 @@ export const geodataService = {
     } satisfies Layer
   },
 
+  async updateLayer(
+    layerId: string,
+    data: {
+      name?: string
+      description?: string
+      datasource_id?: string
+      style_config?: Record<string, unknown>
+      metadata?: Record<string, unknown>
+      visibility?: boolean
+      z_index?: number
+    },
+  ) {
+    const response = await api.patch<RawLayer>(`/layers/${layerId}/`, {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.datasource_id !== undefined && { datasource: data.datasource_id }),
+      ...(data.visibility !== undefined && { visibility: data.visibility }),
+      ...(data.z_index !== undefined && { z_index: data.z_index }),
+      ...(data.style_config !== undefined && { style_config: data.style_config }),
+      ...(data.metadata !== undefined && { metadata: data.metadata }),
+    })
+
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      project_id: toId(response.data.project),
+      datasource_id: toId(response.data.datasource),
+      visibility: response.data.visibility,
+      z_index: response.data.z_index,
+      style_config: response.data.style_config ?? {},
+      metadata: response.data.metadata ?? {},
+    } satisfies Layer
+  },
+
+  async deleteLayer(layerId: string): Promise<void> {
+    await api.delete(`/layers/${layerId}/`)
+  },
+
   async fetchDatasources() {
     const datasources = await fetchAllPages<RawDatasource>('/datasources/')
     return datasources.map<Datasource>((datasource) => ({
@@ -233,13 +272,18 @@ export const geodataService = {
     })
 
     // 3. Create layer
+    const geometryType = 
+      data.geometry && typeof data.geometry === 'object' && 'type' in data.geometry 
+        ? data.geometry.type 
+        : 'unknown'
+    
     await this.createLayer({
       name: data.layerName,
       description: data.layerDescription,
       project_id: project.id,
       datasource_id: datasource.id,
       style_config: data.style_config,
-      metadata: { drawn: true, geometryType: (data.geometry as any).type },
+      metadata: { drawn: true, geometryType },
     })
 
     return project

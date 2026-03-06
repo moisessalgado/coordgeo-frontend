@@ -205,13 +205,12 @@ export function CreateLayerModal({
 
           <div className="space-y-2">
             <label htmlFor="layer-description" className="block text-sm font-medium text-slate-700">
-              Descrição
+              Descrição <span className="text-slate-500">(opcional)</span>
             </label>
             <textarea
               id="layer-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               disabled={isLoading}
               rows={2}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
