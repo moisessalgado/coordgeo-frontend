@@ -101,7 +101,7 @@ export function CreateLayerModal({
         const datasource = await geodataService.createDatasource({
           name: `${name} - Datasource`,
           description: `GeoJSON inline para ${name}`,
-          datasource_type: 'geojson',
+          datasource_type: 'vector',
           storage_url: `data:application/json,${encodeURIComponent(geojsonString)}`,
           metadata: { source: 'draw', created_at: new Date().toISOString() },
         })

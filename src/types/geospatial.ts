@@ -1,4 +1,4 @@
-export type DatasourceType = 'vector' | 'raster' | 'pmtiles' | 'mvt' | 'geojson'
+export type DatasourceType = 'vector' | 'raster' | 'pmtiles' | 'mvt'
 
 export type GeometryCoordinates =
   | [number, number]
