@@ -112,6 +112,29 @@ export const geodataService = {
     } satisfies Project
   },
 
+  async updateProject(
+    projectId: string,
+    data: { name?: string; description?: string; geometry?: ProjectGeometry | null },
+  ) {
+    const response = await api.patch<RawProject>(`/projects/${projectId}/`, {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.geometry !== undefined && { geometry: data.geometry }),
+    })
+
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      geometry: parseProjectGeometry(response.data.geometry),
+      created_at: response.data.created_at,
+    } satisfies Project
+  },
+
+  async deleteProject(projectId: string): Promise<void> {
+    await api.delete(`/projects/${projectId}/`)
+  },
+
   async fetchLayers() {
     const layers = await fetchAllPages<RawLayer>('/layers/')
     return layers.map<Layer>((layer) => ({
@@ -235,6 +258,41 @@ export const geodataService = {
       metadata: response.data.metadata ?? {},
       is_public: response.data.is_public,
     } satisfies Datasource
+  },
+
+  async updateDatasource(
+    datasourceId: string,
+    data: {
+      name?: string
+      description?: string
+      datasource_type?: Datasource['datasource_type']
+      storage_url?: string
+      metadata?: Record<string, unknown>
+      is_public?: boolean
+    },
+  ) {
+    const response = await api.patch<RawDatasource>(`/datasources/${datasourceId}/`, {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.datasource_type !== undefined && { datasource_type: data.datasource_type }),
+      ...(data.storage_url !== undefined && { storage_url: data.storage_url }),
+      ...(data.metadata !== undefined && { metadata: data.metadata }),
+      ...(data.is_public !== undefined && { is_public: data.is_public }),
+    })
+
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      datasource_type: response.data.datasource_type,
+      storage_url: response.data.storage_url,
+      metadata: response.data.metadata ?? {},
+      is_public: response.data.is_public,
+    } satisfies Datasource
+  },
+
+  async deleteDatasource(datasourceId: string): Promise<void> {
+    await api.delete(`/datasources/${datasourceId}/`)
   },
 
   async createProjectAndLayer(data: {

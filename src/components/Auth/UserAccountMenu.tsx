@@ -76,6 +76,11 @@ export function UserAccountMenu() {
     navigate('/select-org')
   }
 
+  const handleOpenSettings = () => {
+    setIsOpen(false)
+    navigate('/settings')
+  }
+
   const displayName = userProfile?.display_name || userProfile?.username || 'Conta ativa'
   const displayEmail = userProfile?.email || 'usuario@coordgeo'
 
@@ -144,6 +149,17 @@ export function UserAccountMenu() {
               <span>Trocar organização</span>
               <span>→</span>
             </button>
+
+            {location.pathname !== '/settings' ? (
+              <button
+                type="button"
+                onClick={handleOpenSettings}
+                className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                <span>Configurações</span>
+                <span>→</span>
+              </button>
+            ) : null}
 
             <button
               type="button"

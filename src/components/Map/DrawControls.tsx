@@ -7,6 +7,7 @@ interface DrawControlsProps {
   isDrawing: boolean
   isEditing: boolean
   hasEditableLayers: boolean
+  className?: string
 }
 
 export function DrawControls({
@@ -18,9 +19,12 @@ export function DrawControls({
   isDrawing,
   isEditing,
   hasEditableLayers,
+  className,
 }: DrawControlsProps) {
+  const containerClasses = className ?? 'flex flex-col gap-2 rounded-lg bg-white p-2 shadow-lg'
+
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-white p-2 shadow-lg">
+    <div className={containerClasses}>
       {isDrawing || isEditing ? (
         <button
           onClick={onCancelDraw}

@@ -9,6 +9,9 @@ import { useAuthStore } from './state/authStore.ts'
 import { useOrgStore } from './state/orgStore.ts'
 
 const MapPage = lazy(() => import('./pages/MapPage.tsx').then((module) => ({ default: module.MapPage })))
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage.tsx').then((module) => ({ default: module.SettingsPage })),
+)
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const accessToken = useAuthStore((state) => state.accessToken)
@@ -123,6 +126,31 @@ function App() {
                   }
                 >
                   <MapPage />
+                </Suspense>
+              </RequireOrg>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <RequireOrg>
+                <Suspense
+                  fallback={
+                    <main className="grid min-h-screen place-items-center bg-slate-100 px-6">
+                      <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
+                        <img
+                          src="/brand/coordgeo-mark.png"
+                          alt="CoordGeo"
+                          className="h-16 w-16 object-contain"
+                        />
+                        <p className="text-sm text-slate-600">Carregando configurações...</p>
+                      </div>
+                    </main>
+                  }
+                >
+                  <SettingsPage />
                 </Suspense>
               </RequireOrg>
             </RequireAuth>

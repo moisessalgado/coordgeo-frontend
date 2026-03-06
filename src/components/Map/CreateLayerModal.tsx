@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GeoJsonGeometry } from '../../types/geospatial.ts'
 import type { Project } from '../../types/geospatial.ts'
 import { geodataService } from '../../services/geodata.ts'
@@ -22,6 +22,8 @@ export function CreateLayerModal({
   onSuccess,
 }: CreateLayerModalProps) {
   const fetchMapData = useMapStore((state) => state.fetchMapData)
+  const activeProjectId = useMapStore((state) => state.activeProjectId)
+  const setActiveProject = useMapStore((state) => state.setActiveProject)
   const hasProjects = projects.length > 0
 
   // Generate suggested names based on existing data (must be before useState)
@@ -30,11 +32,42 @@ export function CreateLayerModal({
 
   const [name, setName] = useState(suggestedLayerName)
   const [description, setDescription] = useState('')
-  const [selectedProjectId, setSelectedProjectId] = useState('')
+  const [selectedProjectId, setSelectedProjectId] = useState(activeProjectId ?? '')
   const [projectName, setProjectName] = useState(suggestedProjectName)
   const [projectDescription, setProjectDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const getDefaultProjectId = () => {
+    if (!hasProjects) {
+      return ''
+    }
+
+    if (activeProjectId && projects.some((project) => project.id === activeProjectId)) {
+      return activeProjectId
+    }
+
+    return projects[0]?.id ?? ''
+  }
+
+  const defaultProjectId = getDefaultProjectId()
+
+  const resetForm = () => {
+    setName(`Layer ${useMapStore.getState().layers.length + 1}`)
+    setDescription('')
+    setSelectedProjectId(getDefaultProjectId())
+    setProjectName(`Project ${projects.length + 1}`)
+    setProjectDescription('')
+    setError(null)
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    setSelectedProjectId(defaultProjectId)
+  }, [defaultProjectId, isOpen])
 
   if (!isOpen || !geometry) return null
 
@@ -78,7 +111,7 @@ export function CreateLayerModal({
     try {
       if (!hasProjects) {
         // Create project and layer together
-        await geodataService.createProjectAndLayer({
+        const createdProject = await geodataService.createProjectAndLayer({
           projectName,
           projectDescription,
           layerName: name,
@@ -89,6 +122,7 @@ export function CreateLayerModal({
             paint: getDefaultPaint(geometry.type),
           },
         })
+        setActiveProject(createdProject.id)
       } else {
         // Create datasource GeoJSON inline
         const geojsonString = JSON.stringify({
@@ -122,12 +156,15 @@ export function CreateLayerModal({
           },
           metadata: { drawn: true, geometryType: geometry.type },
         })
+
+        setActiveProject(selectedProjectId)
       }
 
       // Refresh map data
       await fetchMapData()
 
       onSuccess?.()
+      resetForm()
       onClose()
     } catch (err) {
       setError(
@@ -168,6 +205,7 @@ export function CreateLayerModal({
 
   const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget && !isLoading) {
+      resetForm()
       onClose()
     }
   }

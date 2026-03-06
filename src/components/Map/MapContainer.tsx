@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import MapboxDraw from 'maplibre-gl-draw'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { DrawControls } from './DrawControls.tsx'
 import { CreateLayerModal } from './CreateLayerModal.tsx'
 import { EditLayerModal } from './EditLayerModal.tsx'
 import { FeatureDetailsPanel } from './FeatureDetailsPanel.tsx'
@@ -23,6 +22,22 @@ interface MapContainerProps {
   projects: Project[]
   isLayerVisible: (layerId: string) => boolean
   onMapReady?: (zoomToGeometry: (geometry: ProjectGeometry) => void) => void
+  onToolboxActionsReady?: (actions: MapToolboxActions) => void
+  onToolboxStateChange?: (state: MapToolboxState) => void
+}
+
+export interface MapToolboxActions {
+  drawPoint: () => void
+  drawLineString: () => void
+  drawPolygon: () => void
+  editLayer: () => void
+  cancelDraw: () => void
+}
+
+export interface MapToolboxState {
+  isDrawing: boolean
+  isEditing: boolean
+  hasEditableLayers: boolean
 }
 
 const sourceIdFor = (datasourceId: string) => `coordgeo-source-${datasourceId}`
@@ -241,7 +256,16 @@ const toLayerSpec = (
   return spec as maplibregl.LayerSpecification
 }
 
-export function MapContainer({ className, layers, datasources, projects, isLayerVisible, onMapReady }: MapContainerProps) {
+export function MapContainer({
+  className,
+  layers,
+  datasources,
+  projects,
+  isLayerVisible,
+  onMapReady,
+  onToolboxActionsReady,
+  onToolboxStateChange,
+}: MapContainerProps) {
   const mapElement = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
@@ -454,28 +478,31 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
     }
   }, [])
 
-  const handleDrawPoint = () => {
+  const handleDrawPoint = useCallback(() => {
     if (drawRef.current) {
       drawRef.current.changeMode('draw_point')
       setIsDrawing(true)
+      setIsEditing(false)
     }
-  }
+  }, [])
 
-  const handleDrawLineString = () => {
+  const handleDrawLineString = useCallback(() => {
     if (drawRef.current) {
       drawRef.current.changeMode('draw_line_string')
       setIsDrawing(true)
+      setIsEditing(false)
     }
-  }
+  }, [])
 
-  const handleDrawPolygon = () => {
+  const handleDrawPolygon = useCallback(() => {
     if (drawRef.current) {
       drawRef.current.changeMode('draw_polygon')
       setIsDrawing(true)
+      setIsEditing(false)
     }
-  }
+  }, [])
 
-  const handleEditLayer = () => {
+  const handleEditLayer = useCallback(() => {
     // Verifica se há layers editáveis
     const editableLayers = layers.filter((layer) => {
       const datasource = datasources.find((ds) => ds.id === layer.datasource_id)
@@ -515,16 +542,16 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
         setIsEditModalOpen(true)
       }
     }
-  }
+  }, [datasources, layers])
 
-  const handleCancelDraw = () => {
+  const handleCancelDraw = useCallback(() => {
     if (drawRef.current) {
       drawRef.current.changeMode('simple_select')
       drawRef.current.deleteAll()
       setIsDrawing(false)
       setIsEditing(false)
     }
-  }
+  }, [])
 
   // Verifica se há layers editáveis
   const hasEditableLayers = layers.some((layer) => {
@@ -532,22 +559,34 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
     return datasource?.storage_url.startsWith('data:application/json')
   })
 
+  useEffect(() => {
+    onToolboxActionsReady?.({
+      drawPoint: handleDrawPoint,
+      drawLineString: handleDrawLineString,
+      drawPolygon: handleDrawPolygon,
+      editLayer: handleEditLayer,
+      cancelDraw: handleCancelDraw,
+    })
+  }, [
+    handleCancelDraw,
+    handleDrawLineString,
+    handleDrawPoint,
+    handleDrawPolygon,
+    handleEditLayer,
+    onToolboxActionsReady,
+  ])
+
+  useEffect(() => {
+    onToolboxStateChange?.({
+      isDrawing,
+      isEditing,
+      hasEditableLayers,
+    })
+  }, [hasEditableLayers, isDrawing, isEditing, onToolboxStateChange])
+
   return (
     <div className="relative h-full w-full">
       <div ref={mapElement} className={className} />
-
-      <div className="absolute right-4 top-4">
-        <DrawControls
-          onDrawPoint={handleDrawPoint}
-          onDrawLineString={handleDrawLineString}
-          onDrawPolygon={handleDrawPolygon}
-          onEditLayer={handleEditLayer}
-          onCancelDraw={handleCancelDraw}
-          isDrawing={isDrawing}
-          isEditing={isEditing}
-          hasEditableLayers={hasEditableLayers}
-        />
-      </div>
 
       <CreateLayerModal
         isOpen={isLayerModalOpen}
