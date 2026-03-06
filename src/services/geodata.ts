@@ -185,7 +185,6 @@ export const geodataService = {
       datasource_type: data.datasource_type,
       storage_url: data.storage_url,
       metadata: data.metadata ?? {},
-      is_public: false,
     })
 
     return {
@@ -228,7 +227,7 @@ export const geodataService = {
     const datasource = await this.createDatasource({
       name: `${data.layerName} - Datasource`,
       description: `GeoJSON inline para ${data.layerName}`,
-      datasource_type: 'geojson',
+      datasource_type: 'vector',
       storage_url: `data:application/json,${encodeURIComponent(geojsonString)}`,
       metadata: { source: 'draw', created_at: new Date().toISOString() },
     })

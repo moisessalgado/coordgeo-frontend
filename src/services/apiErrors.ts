@@ -63,15 +63,57 @@ const extractDetailMessage = (payload: unknown): string | null => {
 
 export const getUserFacingApiError = (error: unknown, options: ApiErrorMessageOptions): string => {
   if (!axios.isAxiosError(error)) {
+    console.error('Non-Axios error:', error)
     return options.fallbackMessage
   }
 
+  // Log detailed error for debugging
+  console.error('API Error:', {
+    code: error.code,
+    message: error.message,
+    status: error.response?.status,
+    data: error.response?.data,
+    url: error.config?.url,
+    method: error.config?.method,
+  })
+
   if (!error.response) {
+    // Network error, CORS error, timeout, etc
+    if (error.code === 'ECONNABORTED') {
+      return 'Requisição expirou. Tente novamente.'
+    }
+    if (error.code === 'ECONNREFUSED') {
+      return 'Não conseguiu conectar ao servidor. Verifique se o backend está rodando.'
+    }
+    if (error.message.includes('CORS')) {
+      return 'Erro CORS. Problema de configuração entre cliente e servidor.'
+    }
     return 'Falha de rede. Verifique sua conexão e tente novamente.'
   }
 
   const status = error.response.status
   const detail = extractDetailMessage(error.response.data)
+
+  if (status === 400) {
+    // Try to extract field-specific errors
+    const data = error.response.data as Record<string, unknown>
+    if (typeof data === 'object' && data !== null) {
+      const errors = Object.entries(data)
+        .filter(([key]) => key !== 'detail')
+        .map(([key, value]) => {
+          if (Array.isArray(value)) {
+            return `${key}: ${value.join(', ')}`
+          }
+          return `${key}: ${value}`
+        })
+        .join(' | ')
+      
+      if (errors) {
+        return errors
+      }
+    }
+    return detail ?? 'Requisição inválida. Verifique os dados enviados.'
+  }
 
   if (status === 401) {
     if (options.context === 'auth') {
@@ -80,16 +122,12 @@ export const getUserFacingApiError = (error: unknown, options: ApiErrorMessageOp
     return 'Sua sessão expirou. Faça login novamente.'
   }
 
-  if (status === 400) {
-    return detail ?? 'Requisição inválida. Verifique os dados enviados.'
-  }
-
   if (status === 403) {
     return 'Acesso negado para a organização selecionada.'
   }
 
   if (status >= 500) {
-    return 'Serviço temporariamente indisponível. Tente novamente em instantes.'
+    return `Erro no servidor (${status}). Tente novamente em instantes.`
   }
 
   return detail ?? options.fallbackMessage
