@@ -8,9 +8,11 @@ interface OrgState {
   organizations: Organization[]
   isLoading: boolean
   error: string | null
+  isFreemium: boolean
   setActiveOrg: (orgId: string) => void
   clearActiveOrg: () => void
   fetchUserOrganizations: () => Promise<void>
+  fetchAndSetDefaultOrg: () => Promise<void>
   clearError: () => void
 }
 
@@ -45,6 +47,7 @@ export const useOrgStore = create<OrgState>((set) => ({
   organizations: [],
   isLoading: false,
   error: null,
+  isFreemium: false,
 
   setActiveOrg: (orgId) => {
     safeStorageSet(ORG_KEY, orgId)
@@ -60,7 +63,8 @@ export const useOrgStore = create<OrgState>((set) => ({
     set({ isLoading: true, error: null })
     try {
       const organizations = await authService.fetchUserOrganizations()
-      set({ organizations })
+      const isFreemium = organizations.length === 0
+      set({ organizations, isFreemium })
     } catch (error) {
       set({
         error: getUserFacingApiError(error, {
@@ -69,6 +73,25 @@ export const useOrgStore = create<OrgState>((set) => ({
         }),
       })
       throw new Error('organizations_fetch_failed')
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  fetchAndSetDefaultOrg: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const defaultOrg = await authService.fetchDefaultOrganization()
+      safeStorageSet(ORG_KEY, defaultOrg.id)
+      set({ activeOrgId: defaultOrg.id, isFreemium: true })
+    } catch (error) {
+      set({
+        error: getUserFacingApiError(error, {
+          context: 'organization',
+          fallbackMessage: 'Não foi possível carregar a organização padrão.',
+        }),
+      })
+      throw new Error('default_org_fetch_failed')
     } finally {
       set({ isLoading: false })
     }

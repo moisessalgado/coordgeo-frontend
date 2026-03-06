@@ -1,6 +1,6 @@
 # Plano de Construção do Frontend (coordgeo-frontend)
 
-Este plano transforma o guia em uma execução prática, incremental e validável, considerando o estado atual real do repositório `frontend`.
+Plano prático, incremental e validável para evolução do frontend React/Vite. **Última atualização: Março 2026**
 
 ## Pré-requisitos obrigatórios
 
@@ -13,193 +13,264 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
-## 1) Estado Atual (auditado)
+## 1) Estado Atual (Março 2026)
 
-### Já concluído
-- Projeto Vite + React + TypeScript criado.
-- Dependências core instaladas (`react-router-dom`, `axios`, `zustand`, `maplibre-gl`).
-- Dependências de testes instaladas (`@testing-library/react`, `@testing-library/jest-dom`, `vitest`).
-- Dependências de estilização já instaladas (`tailwindcss`, `postcss`, `autoprefixer`).
+### ✅ Já concluído
+- Projeto Vite + React + TypeScript criado e funcionando
+- Dependências core: `react-router-dom`, `axios`, `zustand`, `maplibre-gl`, `tailwindcss`
+- Estrutura de pastas: `components`, `pages`, `services`, `state`, `types`
+- Tipos base: auth, organization, geospatial, api
+- **Autenticação funcional**: login com backend integrado, JWT + refresh tokens
+- **Seleção de organização**: OrgSelectPage com lista de orgs do usuário
+- **Mapa interativo**: MapLibre GL com layers, datasources e projetos renderizando
+- **Estado centralizado**: authStore, orgStore, mapStore com Zustand
+- **Tratamento de erros**: telemetria e error handling em place
+- **Tailwind v4**: configurado com plugin Vite e utilitários funcionando
+- **Landing page**: apresentação da aplicação com hero e features
+- **Signup page**: formulário de criação de conta com validação
+- **Fluxo completo onboarding**: landing → signup → login → auto-select org → mapa
+- **Freemium automático**: usuários novos recebem org padrão invisível + auto-seleção
 
-### Pendente
-- Upgrade de Node.js no ambiente local (WSL está em Node 18.x).
-- Reinstalação de dependências após upgrade de Node (para resolver bindings nativos).
-- Estrutura de pastas de domínio (`components`, `pages`, `services`, `state`, `types`).
-- Configuração de variáveis de ambiente (`.env`, `.env.production`).
-- Tipos base de domínio (auth, organization, geospatial, api).
-- Bootstrap de app (roteamento, providers, integração inicial com API).
-
----
-
-## 2) Diretriz Importante sobre Tailwind (v4)
-
-O projeto está com `tailwindcss@4.x`. Nesse cenário, o fluxo recomendado não depende de `npx tailwindcss init -p`.
-
-### Estratégia adotada
-- Usar plugin oficial do Tailwind para Vite (`@tailwindcss/vite`).
-- Importar Tailwind em `src/index.css` com `@import "tailwindcss";`.
-
-Isso evita inconsistência de versões e simplifica o setup.
+### ⏳ Próximos focos (Fase J em diante)
+1. **CRUD de dados** — Criar/editar projetos, layers e datasources
+2. **Melhorias UX** — Interação com o mapa, filtros, busca, relatórios
+3. **Dashboard/Analytics** — Estatísticas e insights por organização
 
 ---
 
-## 3) Fases de Execução
+## 2) Fases de Execução (Roadmap)
 
-## Fase A — Baseline e confirmação do ambiente
-Objetivo: garantir que o frontend atual sobe sem regressão.
+### ✅ Fase H — Landing page + Signup (CONCLUÍDO)
+**Status: FEITO**
 
-Comandos:
-```bash
-npm run dev
-npm run build
-```
+Entregas implementadas:
 
-Critério de conclusão:
-- App sobe em `http://localhost:5173`.
-- Build executa sem erro.
+**LandingPage.tsx** ✅
+- Header com logo, navegação e botões Login/SignUp
+- Hero section com headline gradiente e description
+- 3 feature cards (Visualização, Multi-tenant, Seguro) com ícones
+- CTAs primários: "Começar agora" → /signup e "Já tenho conta" → /login
+- Footer com copyright
+- Design responsivo com Tailwind (mobile-first)
+- Backdrop blur na navbar para efeito visual
 
----
+**SignupPage.tsx** ✅
+- Layout centralizado, simples e focado
+- SignupForm integrada com validações
+- Campo de confirmação de senha
+- Validação de senha mínima (8 caracteres)
+- Link para login ("Já tem uma conta?")
+- Handling de erros com mensagens user-friendly
 
-## Fase B — Configurar Tailwind v4 corretamente
-Objetivo: habilitar utilitários Tailwind no Vite.
+**SignupForm.tsx** ✅
+- Input de email com validação nativa
+- Inputs de senha e confirmação
+- Validação de match de senhas
+- Validação de comprimento mínimo (8 chars)
+- Estado de loading com disabled button
+- Estilos com Tailwind (focus states, borders)
+- Feedback visual claro
 
-Comandos:
-```bash
-npm install -D @tailwindcss/vite
-```
+**Integração Backend** ✅
+- POST `/api/v1/auth/register/` conectado
+- Auto-login após signup bem-sucedido
+- Redirecionamento automático para /select-org
+- Error handling com fallback message
+- Suporte a senhas com hash no backend
 
-Mudanças esperadas:
-- `vite.config.ts`: adicionar plugin do Tailwind.
-- `src/index.css`: substituir CSS padrão por `@import "tailwindcss";` (e estilos globais mínimos, se necessário).
+**Routes & Guards** ✅
+- Rota `/`: landing page acessível apenas para não-autenticados
+- Rota `/signup`: acessível apenas para não-autenticados
+- PublicOnlyGuard implementado
+- Redirect automático: se logado & com org → /map
 
-Validação rápida:
-- Aplicar uma classe utilitária em `App.tsx` (ex.: `className="p-6"`) e confirmar no navegador.
-
-Critério de conclusão:
-- Classes Tailwind aplicadas visualmente.
-- `npm run build` sem erro.
-
----
-
-## Fase C — Estrutura base de pastas e arquivos
-Objetivo: criar base para evolução por domínio.
-
-Estrutura alvo:
-- `src/components/{Auth,Map,Layout}`
-- `src/pages`
-- `src/services`
-- `src/state`
-- `src/types`
-
-Arquivos mínimos:
-- `src/services/api.ts`
-- `src/services/auth.ts`
-- `src/services/geodata.ts`
-- `src/state/authStore.ts`
-- `src/state/orgStore.ts`
-- `src/state/mapStore.ts`
-- `src/types/auth.ts`
-- `src/types/organization.ts`
-- `src/types/geospatial.ts`
-- `src/types/api.ts`
-
-Critério de conclusão:
-- Estrutura criada e importável sem erros de TypeScript.
+Critério de conclusão: ✅ PASSED
+- Novo usuário consegue acessar landing page ✅
+- Formulário de signup funciona com validações ✅
+- Após signup → auto-login → redireciona para org selection/mapa ✅
 
 ---
 
-## Fase D — Variáveis de ambiente
-Objetivo: padronizar integração backend/frontend.
-
-Arquivos:
-- `.env`
-- `.env.production`
-
-Conteúdo inicial:
-```env
-VITE_API_URL=http://localhost:8000/api
-VITE_MAP_STYLE=https://demotiles.maplibre.org/style.json
-```
-
-Produção:
-```env
-VITE_API_URL=https://api.example.com/api
-VITE_MAP_STYLE=https://demotiles.maplibre.org/style.json
-```
-
-Critério de conclusão:
-- Leitura via `import.meta.env.VITE_API_URL` funcionando.
-
----
-
-## Fase E — App shell e roteamento
-Objetivo: trocar template padrão do Vite por shell do produto.
-
-Rotas base:
-- `/login`
-- `/select-org`
-- `/map`
-- fallback para `/login`
-
-Critério de conclusão:
-- Navegação entre páginas estável.
-- Sem dependência do conteúdo exemplo `Vite + React`.
-
----
-
-## Fase F — Integração API mínima
-Objetivo: preparar autenticação e contexto de organização.
+### ✅ Fase I — Fluxo completo de onboarding (CONCLUÍDO)
+**Status: FEITO**
 
 Entregas:
-- Cliente Axios com base URL por env.
-- Interceptor para `Authorization: Bearer <token>`.
-- Suporte ao header `X-Organization-ID` para endpoints org-scoped.
+- ✅ Rotas: `/`, `/signup`, `/login`, `/select-org`, `/map`
+- ✅ Redirect inteligente baseado em autenticação + organização
+- ✅ Landing page com botões de Login e Criar conta
+- ✅ Auto-seleção de org padrão para freemium
+- ✅ Fluxo invisível: usuario → signup → login → mapa (sem escolher org)
 
-Critério de conclusão:
-- Chamada a `/api/token/` e endpoint protegido funcionando com token/header.
-
----
-
-## Fase G — Qualidade e validação contínua
-Objetivo: manter feedback rápido durante evolução.
-
-Comandos recorrentes:
-```bash
-npm run dev
-npm run build
-npm run lint
-```
-
-Opcional (após script de teste configurado):
-```bash
-npm test
-```
-
-Critério de conclusão:
-- Build e lint verdes antes de cada commit.
+Critério de conclusão: ✅ PASSED
+- Novo usuário faz signup no app
+- Auto-login após signup ✅
+- Auto-seleção de org padrão (PERSONAL) ✅
+- Acessa o mapa automaticamente ✅
+- Logout retorna para landing/login ✅
 
 ---
 
-## 4) Sequência Recomendada de Execução (curta)
+### ⏳ Fase J — CRUD de Dados (PRÓXIMO)
+**Status: POR FAZER**
 
-1. Fase A (sanidade do baseline)
-2. Fase B (Tailwind v4)
-3. Fase C (estrutura)
-4. Fase D (env)
-5. Fase E (rotas)
-6. Fase F (integração API)
-7. Fase G (higiene contínua)
+Objetivo: usuários conseguem criar e editar projetos, layers e datasources.
+
+Entregas por sprint:
+1. **Sprint 1 — Criar Projeto**
+   - Modal/form para criar novo projeto
+   - POST `/api/v1/projects/` com name, description, geometry
+   - Refresh da lista após criação
+   - Toast de sucesso/erro
+
+2. **Sprint 2 — Criar Datasource**
+   - Modal para criar novo datasource
+   - POST `/api/v1/datasources/` com name, datasource_type, storage_url
+   - Suporte a PMTiles, MVT, GeoJSON, Raster
+   - Feedback visual de criação
+
+3. **Sprint 3 — Criar Layer**
+   - Modal para criar nova layer
+   - POST `/api/v1/layers/` com name, project_id, datasource_id, style_config
+   - Ligar layer ao datasource criado
+   - Preview no mapa em tempo real
+
+4. **Sprint 4 — Editar dados**
+   - Forms para editar projetos, datasources e layers
+   - PUT endpoints
+   - Validar mudanças
+
+5. **Sprint 5 — Deletar dados**
+   - Confirmação de exclusão
+   - DELETE endpoints
+
+Critério de conclusão: A definir
+- Usuário consegue criar, listar, editar e deletar dados pelo frontend
+- Dados persistem no mapa após CRUD
+- Feedback visual adequado
 
 ---
 
-## 5) Observações práticas (Windows + WSL)
+### ⏳ Fase K — Melhorias de UX (Mapa + UI) (FUTURO)
+**Status: POR FAZER**
+
+Objetivo: melhorar experiência de uso e interação.
+
+Entregas:
+1. **Interação com o mapa**
+   - Click em features mostra detalhes
+   - Zoom em geometria de projeto
+   - Busca e filtro de layers/projetos
+
+2. **Dashboard/Sidebar melhorado**
+   - Stats por organização (projetos, layers, datasources)
+   - Listagem de layers com thumbnails/preview
+   - Filtro por tipo de datasource
+
+3. **Responsividade**
+   - Layout mobile-friendly
+   - Sidebar colapsável em mobile
+
+4. **Temas e acessibilidade**
+   - Dark mode
+   - Melhor contraste
+   - ARIA labels
+
+5. **Performance**
+   - Lazy loading de dados
+   - Caching estratégico
+
+Critério de conclusão: A definir
+- App funciona bem em mobile e desktop
+- Mapa responsivo e interativo
+- Acessibilidade em nível AA (WCAG)
+
+---
+
+## 3) Sequência Recomendada Atual (Março 2026)
+
+### ✅ Fases Concluídas
+- **Fase A-G**: Baseline, estrutura, auth, mapa (completo)
+- **Fase H**: Landing + Signup (completo)
+- **Fase I**: Fluxo completo onboarding (completo)
+
+### 🎯 Próximo Foco: Fase J — CRUD de Dados
+
+Recomendação: Começar por **Criar Projeto** (Sprint 1) para validar padrão e depois evoluir para datasources e layers.
+
+**Stack para CRUD:**
+- Modal/Dialog components (pode usar headless UI ou criar simples com Tailwind)
+- Forms com validação
+- POST/PUT/DELETE endpoints
+- Refresh de listagens após operações
+- Toast notifications para feedback
+- Otimistic updates (opcional)
+
+---
+
+## 4) Observações práticas (Windows + WSL)
 
 - Executar comandos no diretório raiz do frontend (onde está `package.json`).
 - Se `npm run dev` estiver em execução, parar com `Ctrl + C` antes de mudanças de dependência.
-- Se necessário, usar segundo terminal para instalar pacotes sem derrubar contexto de logs.
+- Backend deve estar rodando em `http://localhost:8000` para testes integrados.
+
+---
+
+## 5) Appendix: Fases A-G (concluídas previamente)
+
+<details>
+<summary>Ver detalhes das fases já concluídas</summary>
+
+### Fase A — Baseline e confirmação do ambiente ✅
+- App sobe em `http://localhost:5173`
+- Build executa sem erro
+
+### Fase B — Tailwind v4 ✅
+- Plugin `@tailwindcss/vite` instalado
+- Classes utilitárias funcionando
+
+### Fase C — Estrutura base ✅
+- Pastas: `components`, `pages`, `services`, `state`, `types`
+- Arquivos de servico e estado criados
+
+### Fase D — Variáveis de ambiente ✅
+- `.env` configurado com `VITE_API_URL`
+
+### Fase E — App shell e roteamento ✅
+- Rotas: `/login`, `/select-org`, `/map`
+- Guards de autenticação funcionando
+
+### Fase F — Integração API ✅
+- Cliente Axios configurado
+- Interceptors para JWT e `X-Organization-ID`
+
+### Fase G — Qualidade contínua ✅
+- Build e lint operacionais
+- Testes unitários configurados (Vitest)
+
+</details>
 
 ---
 
 ## 6) Próximo passo operacional
 
-Próxima ação recomendada: iniciar pela **Fase B (Tailwind v4)**, pois isso destrava layout e UI para as fases seguintes.
+**Ação recomendada agora**: iniciar **Fase J Sprint 1** — criar modal/form para novos projetos.
+
+**Estrutura esperada:**
+```
+src/components/
+├── Projects/
+│   ├── ProjectForm.tsx         (novo)
+│   ├── CreateProjectModal.tsx  (novo)
+│   └── ProjectList.tsx         (refactor do existente)
+├── Map/
+│   ├── MapContainer.tsx
+│   └── LayerToggle.tsx
+└── ...
+```
+
+**API a ser usada:**
+- `POST /api/v1/projects/` com { name, description, geometry, organization }
+- Retorna novo projeto com ID e detalhes
+- Refresh mapStore.fetchMapData() após sucesso
+- Toast feedback (sucesso/erro)
+

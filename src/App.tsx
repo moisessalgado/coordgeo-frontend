@@ -1,6 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { LandingPage } from './pages/LandingPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
+import { SignupPage } from './pages/SignupPage.tsx'
 import { OrgSelectPage } from './pages/OrgSelectPage.tsx'
 import { useAuthStore } from './state/authStore.ts'
 import { useOrgStore } from './state/orgStore.ts'
@@ -23,7 +25,7 @@ function RequireOrg({ children }: { children: ReactNode }) {
   return children
 }
 
-function LoginGuard({ children }: { children: ReactNode }) {
+function PublicOnlyGuard({ children }: { children: ReactNode }) {
   const accessToken = useAuthStore((state) => state.accessToken)
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
 
@@ -43,11 +45,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route
+          path="/"
+          element={
+            <PublicOnlyGuard>
+              <LandingPage />
+            </PublicOnlyGuard>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicOnlyGuard>
+              <SignupPage />
+            </PublicOnlyGuard>
+          }
+        />
+        <Route
           path="/login"
           element={
-            <LoginGuard>
+            <PublicOnlyGuard>
               <LoginPage />
-            </LoginGuard>
+            </PublicOnlyGuard>
           }
         />
         <Route
@@ -76,7 +94,7 @@ function App() {
             </RequireAuth>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

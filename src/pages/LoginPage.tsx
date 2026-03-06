@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { LoginForm } from '../components/Auth/LoginForm.tsx'
 import { useAuthStore } from '../state/authStore.ts'
 
@@ -25,6 +25,12 @@ export function LoginPage() {
         <h1 className="mb-1 text-2xl font-semibold text-slate-900">CoordGeo</h1>
         <p className="mb-6 text-sm text-slate-600">Acesse sua conta para continuar.</p>
         <LoginForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
+        <div className="mt-4 text-center text-sm text-slate-600">
+          Não tem uma conta?{' '}
+          <Link to="/signup" className="font-medium text-slate-900 hover:underline">
+            Criar conta
+          </Link>
+        </div>
       </div>
     </main>
   )
