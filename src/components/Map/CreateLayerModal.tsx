@@ -21,6 +21,13 @@ export function CreateLayerModal({
   onClose,
   onSuccess,
 }: CreateLayerModalProps) {
+  const fetchMapData = useMapStore((state) => state.fetchMapData)
+  const hasProjects = projects.length > 0
+
+  // Generate suggested names based on existing data (must be before useState)
+  const suggestedLayerName = `Layer ${useMapStore.getState().layers.length + 1}`
+  const suggestedProjectName = `Project ${projects.length + 1}`
+
   const [name, setName] = useState(suggestedLayerName)
   const [description, setDescription] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState('')
@@ -28,15 +35,8 @@ export function CreateLayerModal({
   const [projectDescription, setProjectDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const fetchMapData = useMapStore((state) => state.fetchMapData)
-
-  const hasProjects = projects.length > 0
 
   if (!isOpen || !geometry) return null
-
-  // Generate suggested names based on existing data
-  const suggestedLayerName = `Layer ${useMapStore.getState().layers.length + 1}`
-  const suggestedProjectName = `Project ${projects.length + 1}`
 
   // Calcular informações da geometria com Turf.js
   const getGeometryInfo = () => {
