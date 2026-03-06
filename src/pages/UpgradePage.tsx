@@ -20,6 +20,11 @@ export function UpgradePage() {
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [upgradeError, setUpgradeError] = useState<string | null>(null)
 
+  const hasPremiumPlan = organizations.some(
+    (org) => org.plan === 'pro' || org.plan === 'enterprise'
+  )
+  const personalOrg = organizations.find((org) => org.org_type === 'personal')
+
   useEffect(() => {
     if (!isLoggedIn) {
       return
@@ -37,6 +42,7 @@ export function UpgradePage() {
       navigate('/signup')
       return
     }
+
     setIsUpgradeModalOpen(true)
     setUpgradeError(null)
   }
@@ -54,21 +60,13 @@ export function UpgradePage() {
       }
     }
 
-    // Filter to only TEAM organizations (PERSONAL orgs cannot be upgraded)
-    const teamOrgs = orgsToCheck.filter((org) => org.org_type === 'team')
-
-    if (teamOrgs.length === 0) {
-      setUpgradeError('Você só possui organizações pessoais. Crie uma organização em equipe para usar o plano PRO.')
-      return
-    }
-
-    // Use active org if it's a TEAM org, otherwise use first TEAM org
-    const orgIdForUpgrade = activeOrgId && teamOrgs.some((org) => org.id === activeOrgId)
+    const personalOrganization = orgsToCheck.find((org) => org.org_type === 'personal')
+    const orgIdForUpgrade = activeOrgId && orgsToCheck.some((org) => org.id === activeOrgId)
       ? activeOrgId
-      : teamOrgs[0]?.id
+      : personalOrganization?.id
 
     if (!orgIdForUpgrade) {
-      setUpgradeError('Nenhuma organização em equipe disponível para upgrade')
+      setUpgradeError('Nenhuma organização disponível para upgrade')
       return
     }
 
@@ -81,7 +79,6 @@ export function UpgradePage() {
 
     try {
       await upgradeOrganizationPlan(orgIdForUpgrade, 'pro')
-      // Refresh organizations data to update frontend state
       await fetchUserOrganizations()
       setIsUpgradeModalOpen(false)
       navigate('/map', { replace: true })
@@ -94,10 +91,6 @@ export function UpgradePage() {
       setIsUpgrading(false)
     }
   }
-
-  // Get list of organizations that can be upgraded (TEAM orgs only)
-  const upgradeableOrgs = organizations.filter((org) => org.org_type === 'team')
-  const canUpgrade = upgradeableOrgs.length > 0
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
@@ -256,7 +249,7 @@ export function UpgradePage() {
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                <span className="font-medium">Organizações ilimitadas</span>
+                <span className="font-medium">1 organização adicional além da pessoal</span>
               </li>
               <li className="flex items-start gap-2">
                 <svg
@@ -324,12 +317,13 @@ export function UpgradePage() {
               </li>
             </ul>
             <div className="mt-8">
-              {isLoggedIn && !canUpgrade ? (
-                <div className="rounded-lg bg-amber-50 p-4 text-center">
-                  <p className="text-sm text-amber-800">
-                    Você só possui organizações pessoais. Crie uma organização em equipe para usar o plano PRO.
-                  </p>
-                </div>
+              {isLoggedIn && hasPremiumPlan ? (
+                <Link
+                  to="/map"
+                  className="block rounded-lg border-2 border-blue-500 bg-white px-6 py-3 text-center text-sm font-semibold text-blue-600 hover:bg-blue-50"
+                >
+                  Plano PRO ativo
+                </Link>
               ) : (
                 <>
                   <button
@@ -341,7 +335,7 @@ export function UpgradePage() {
                     {isLoggedIn ? 'Aderir ao Plano PRO' : 'Começar com Plano PRO'}
                   </button>
                   <p className="mt-3 text-center text-xs text-slate-500">
-                    R$ 49/mês para organizações ilimitadas
+                    R$ 49/mês para liberar uma organização adicional e teams
                   </p>
                 </>
               )}
@@ -388,7 +382,7 @@ export function UpgradePage() {
               <div className="border-t border-slate-200 pt-2 text-sm text-slate-600">
                 <p className="font-semibold text-slate-900">Organização:</p>
                 <p className="mt-1">
-                  {upgradeableOrgs.find((org) => org.id === activeOrgId)?.name || upgradeableOrgs[0]?.name || 'Carregando...'}
+                  {organizations.find((org) => org.id === activeOrgId)?.name || personalOrg?.name || 'Carregando...'}
                 </p>
               </div>
             </div>

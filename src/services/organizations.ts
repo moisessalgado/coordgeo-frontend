@@ -22,7 +22,13 @@ export async function upgradeOrganizationPlan(
 ): Promise<Organization> {
   const response = await api.post<Organization>(
     `/organizations/${organizationId}/upgrade/`,
-    { plan: targetPlan }
+    { plan: targetPlan },
+    {
+      // Keep URL organization and org-header in sync for this org-scoped action.
+      headers: {
+        'X-Organization-ID': organizationId,
+      },
+    }
   )
   return response.data
 }
@@ -32,5 +38,26 @@ export async function upgradeOrganizationPlan(
  */
 export async function getOrganization(organizationId: string): Promise<Organization> {
   const response = await api.get<Organization>(`/organizations/${organizationId}/`)
+  return response.data
+}
+
+/**
+ * Create a new TEAM organization.
+ * Requires user to have PRO plan in at least one organization.
+ * User automatically becomes owner and admin.
+ *
+ * POST /api/v1/organizations/create-team/
+ * Body: { "name": "...", "slug": "...", "description": "..." }
+ */
+export async function createTeamOrganization(
+  name: string,
+  slug: string,
+  description: string = '',
+): Promise<Organization> {
+  const response = await api.post<Organization>('/organizations/create-team/', {
+    name,
+    slug,
+    description,
+  })
   return response.data
 }

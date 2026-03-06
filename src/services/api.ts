@@ -23,7 +23,7 @@ export const API_BASE_URL = normalizeBaseUrl(
   import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1',
 )
 
-const unaffiliatedPaths = ['/token/', '/token/refresh/', '/user/organizations/']
+const unaffiliatedPaths = ['/token/', '/token/refresh/', '/user/profile/', '/user/organizations/', '/user/default-organization/', '/organizations/create-team/', '/auth/register/']
 
 const requiresOrgHeader = (path: string) => {
   return !unaffiliatedPaths.some((basePath) => path.includes(basePath))

@@ -14,6 +14,7 @@ interface OrgState {
   clearOrgSession: () => void
   fetchUserOrganizations: () => Promise<void>
   fetchAndSetDefaultOrg: () => Promise<void>
+  resolveAndSetActiveOrg: () => Promise<string | null>
   clearError: () => void
 }
 
@@ -43,7 +44,16 @@ const safeStorageRemove = (key: string) => {
   }
 }
 
-export const useOrgStore = create<OrgState>((set) => ({
+const pickPreferredOrganization = (organizations: Organization[]) => {
+  const teamOrg = organizations.find((organization) => organization.org_type === 'team')
+  if (teamOrg) {
+    return teamOrg
+  }
+
+  return organizations.find((organization) => organization.org_type === 'personal') ?? null
+}
+
+export const useOrgStore = create<OrgState>((set, get) => ({
   activeOrgId: safeStorageGet(ORG_KEY),
   organizations: [],
   isLoading: false,
@@ -104,6 +114,50 @@ export const useOrgStore = create<OrgState>((set) => ({
         }),
       })
       throw new Error('default_org_fetch_failed')
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  resolveAndSetActiveOrg: async (): Promise<string | null> => {
+    const { activeOrgId } = get()
+
+    if (activeOrgId) {
+      return activeOrgId
+    }
+
+    set({ isLoading: true, error: null })
+
+    try {
+      const organizations = await authService.fetchUserOrganizations()
+      const preferredOrganization = pickPreferredOrganization(organizations)
+
+      if (preferredOrganization) {
+        safeStorageSet(ORG_KEY, preferredOrganization.id)
+        set({
+          activeOrgId: preferredOrganization.id,
+          organizations,
+          isFreemium: organizations.length === 0,
+        })
+        return preferredOrganization.id
+      }
+
+      const defaultOrg = await authService.fetchDefaultOrganization()
+      safeStorageSet(ORG_KEY, defaultOrg.id)
+      set({
+        activeOrgId: defaultOrg.id,
+        organizations,
+        isFreemium: organizations.length === 0,
+      })
+      return defaultOrg.id
+    } catch (error) {
+      set({
+        error: getUserFacingApiError(error, {
+          context: 'organization',
+          fallbackMessage: 'Não foi possível definir a organização ativa.',
+        }),
+      })
+      return null
     } finally {
       set({ isLoading: false })
     }

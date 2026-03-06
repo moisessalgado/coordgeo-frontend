@@ -16,12 +16,13 @@ export function LoginPage() {
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
   const clearOrgSession = useOrgStore((state) => state.clearOrgSession)
   const organizations = useOrgStore((state) => state.organizations)
+  const resolveAndSetActiveOrg = useOrgStore((state) => state.resolveAndSetActiveOrg)
 
   const isLoggedIn = !!accessToken
   
   // Check if user has PRO/ENTERPRISE plan
   const hasPremiumPlan = organizations.some(
-    (org) => org.plan === 'PRO' || org.plan === 'ENTERPRISE'
+    (org) => org.plan === 'pro' || org.plan === 'enterprise'
   )
   const shouldShowUpgrade = !hasPremiumPlan
 
@@ -35,6 +36,13 @@ export function LoginPage() {
     clearOrgSession()
     try {
       await login(email, password)
+      const resolvedOrgId = await resolveAndSetActiveOrg()
+
+      if (resolvedOrgId) {
+        navigate('/map', { replace: true })
+        return
+      }
+
       navigate('/select-org', { replace: true })
     } catch {
       return
@@ -46,8 +54,15 @@ export function LoginPage() {
       <Navbar />
       <main className="flex flex-1 flex-col justify-center p-6">
         <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="mb-1 text-2xl font-semibold text-slate-900">CoordGeo</h1>
-        <p className="mb-6 text-sm text-slate-600">Acesse sua conta para continuar.</p>
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img
+            src="/brand/coordgeo-mark.png"
+            alt="CoordGeo"
+            className="mb-4 h-20 w-20 object-contain"
+          />
+          <h1 className="mb-1 text-2xl font-semibold text-slate-900">CoordGeo</h1>
+          <p className="text-sm text-slate-600">Acesse sua conta para continuar.</p>
+        </div>
         
         {isLoggedIn && (
           <div className="mb-6 rounded-lg bg-blue-50 border border-blue-200 p-4">

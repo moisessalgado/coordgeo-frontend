@@ -40,10 +40,17 @@ export function SignupPage() {
       <Navbar />
       <main className="flex flex-1 flex-col justify-center p-6">
         <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
-          <p className="mb-6 text-sm text-slate-600">
-            Comece a usar o CoordGeo gratuitamente.
-          </p>
+          <div className="mb-6 flex flex-col items-center text-center">
+            <img
+              src="/brand/coordgeo-mark.png"
+              alt="CoordGeo"
+              className="mb-4 h-20 w-20 object-contain"
+            />
+            <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
+            <p className="text-sm text-slate-600">
+              Comece a usar o CoordGeo gratuitamente.
+            </p>
+          </div>
           <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
           <div className="mt-6 space-y-3">
             <div className="text-center text-sm text-slate-600">

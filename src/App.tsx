@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
@@ -20,9 +20,48 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 function RequireOrg({ children }: { children: ReactNode }) {
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
+  const resolveAndSetActiveOrg = useOrgStore((state) => state.resolveAndSetActiveOrg)
+  const [isResolving, setIsResolving] = useState(false)
+  const [hasResolvedOnce, setHasResolvedOnce] = useState(false)
+
+  useEffect(() => {
+    if (activeOrgId || isResolving || hasResolvedOnce) {
+      return
+    }
+
+    const resolveOrg = async () => {
+      setIsResolving(true)
+      await resolveAndSetActiveOrg()
+      setIsResolving(false)
+      setHasResolvedOnce(true)
+    }
+
+    void resolveOrg()
+  }, [activeOrgId, hasResolvedOnce, isResolving, resolveAndSetActiveOrg])
+
+  if (activeOrgId) {
+    return children
+  }
+
+  if (isResolving || !hasResolvedOnce) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-100 px-6">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
+          <img
+            src="/brand/coordgeo-mark.png"
+            alt="CoordGeo"
+            className="h-16 w-16 object-contain"
+          />
+          <p className="text-sm text-slate-600">Preparando sua organização...</p>
+        </div>
+      </main>
+    )
+  }
+
   if (!activeOrgId) {
     return <Navigate to="/select-org" replace />
   }
+
   return children
 }
 
@@ -35,7 +74,7 @@ function PublicOnlyGuard({ children }: { children: ReactNode }) {
   }
 
   if (accessToken) {
-    return <Navigate to="/select-org" replace />
+    return <Navigate to="/map" replace />
   }
 
   return children
@@ -71,8 +110,15 @@ function App() {
               <RequireOrg>
                 <Suspense
                   fallback={
-                    <main className="grid min-h-screen place-items-center bg-slate-100">
-                      <p className="text-sm text-slate-600">Carregando mapa...</p>
+                    <main className="grid min-h-screen place-items-center bg-slate-100 px-6">
+                      <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
+                        <img
+                          src="/brand/coordgeo-mark.png"
+                          alt="CoordGeo"
+                          className="h-16 w-16 object-contain"
+                        />
+                        <p className="text-sm text-slate-600">Carregando mapa...</p>
+                      </div>
                     </main>
                   }
                 >
