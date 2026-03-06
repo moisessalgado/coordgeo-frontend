@@ -128,31 +128,41 @@ Entregas por sprint:
    - **Serviço:** Método `createProject()` adicionado ao `geodataService`
    - **Integração:** MapPage atualizado com ProjectList e modal
 
-2. **Sprint 2 — Criar Datasource**
-   - Modal para criar novo datasource
-   - POST `/api/v1/datasources/` com name, datasource_type, storage_url
-   - Suporte a PMTiles, MVT, GeoJSON, Raster
-   - Feedback visual de criação
+2. **✅ Sprint 2 — Desenhar e criar Layer (CONCLUÍDO)**
+   - ✅ Ferramentas de desenho: ponto, linha, polígono
+   - ✅ Integração com maplibre-gl-draw
+   - ✅ Geoprocessamento client-side com Turf.js
+   - ✅ Cálculo automático de área, perímetro e coordenadas
+   - ✅ Modal para salvar geometria desenhada como layer
+   - ✅ POST `/api/v1/layers/` com geometria e vinculação ao projeto
+   - ✅ Datasource GeoJSON inline criado automaticamente
+   - ✅ Refresh automático do mapa após criação
+   - **Bibliotecas adicionadas:**
+     - `maplibre-gl-draw@1.6.9`: Desenho interativo no mapa
+     - `@turf/turf@7.2.0`: Operações geoespaciais client-side
+   - **Componentes criados:**
+     - `DrawControls.tsx`: Botões de controle de desenho
+     - `CreateLayerModal.tsx`: Modal com form e cálculos geométricos
+   - **Serviços:** Métodos `createLayer()` e `createDatasource()` no `geodataService`
 
-3. **Sprint 3 — Criar Layer**
-   - Modal para criar nova layer
-   - POST `/api/v1/layers/` com name, project_id, datasource_id, style_config
-   - Ligar layer ao datasource criado
-   - Preview no mapa em tempo real
+3. **Sprint 3 — Editar geometrias**
+   - Habilitar edição de layers existentes
+   - Modo edição do maplibre-gl-draw
+   - PUT para atualizar geometria
+   - Recalcular métricas com Turf.js
 
-4. **Sprint 4 — Editar dados**
-   - Forms para editar projetos, datasources e layers
-   - PUT endpoints
-   - Validar mudanças
-
-5. **Sprint 5 — Deletar dados**
+4. **Sprint 4 — Deletar layers**
    - Confirmação de exclusão
-   - DELETE endpoints
+   - DELETE `/api/v1/layers/`
+   - Cascata para datasources órfãos (opcional)
 
-Critério de conclusão: A definir
-- Usuário consegue criar, listar, editar e deletar dados pelo frontend
-- Dados persistem no mapa após CRUD
-- Feedback visual adequado
+Critério de conclusão: ✅ Sprint 1 e 2 CONCLUÍDAS
+- ✅ Usuário consegue criar projetos
+- ✅ Usuário desenha geometrias no mapa (ponto, linha, polígono)
+- ✅ Geometrias são salvas como layers vinculadas a projetos
+- ✅ Datasources GeoJSON criados automaticamente
+- ✅ Cálculos de área/perímetro exibidos
+- ⏳ Pendente: Edição e deleção de layers
 
 ---
 

@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.2.0",
     "axios": "^1.13.6",
     "maplibre-gl": "^5.19.0",
+    "maplibre-gl-draw": "^1.6.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
@@ -22,6 +24,8 @@
     "@tailwindcss/vite": "^4.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/geojson": "^7946.0.15",
+    "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

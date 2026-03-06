@@ -1,6 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
+import MapboxDraw from 'maplibre-gl-draw'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import 'maplibre-gl-draw/dist/maplibre-gl-draw.css'
+import { DrawControls } from './DrawControls.tsx'
+import { CreateLayerModal } from './CreateLayerModal.tsx'
 import type {
   Datasource,
   GeoJsonFeature,
@@ -232,9 +236,14 @@ const toLayerSpec = (
 export function MapContainer({ className, layers, datasources, projects, isLayerVisible }: MapContainerProps) {
   const mapElement = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
+  const drawRef = useRef<MapboxDraw | null>(null)
   const dynamicSourceIds = useRef<string[]>([])
   const dynamicLayerIds = useRef<string[]>([])
   const hasAppliedInitialBounds = useRef(false)
+
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [drawnGeometry, setDrawnGeometry] = useState<GeoJsonGeometry | null>(null)
+  const [isLayerModalOpen, setIsLayerModalOpen] = useState(false)
 
   const clearDynamicMapData = (map: maplibregl.Map) => {
     dynamicLayerIds.current.forEach((layerId) => {
@@ -267,10 +276,30 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
 
     mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right')
 
+    // Initialize draw control
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {},
+    })
+    mapRef.current.addControl(draw, 'top-left')
+    drawRef.current = draw
+
+    // Listen for draw events
+    mapRef.current.on('draw.create', (e) => {
+      if (e.features && e.features.length > 0) {
+        const feature = e.features[0]
+        setDrawnGeometry(feature.geometry as GeoJsonGeometry)
+        setIsLayerModalOpen(true)
+        setIsDrawing(false)
+        draw.deleteAll()
+      }
+    })
+
     return () => {
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null
+        drawRef.current = null
       }
     }
   }, [])
@@ -350,5 +379,61 @@ export function MapContainer({ className, layers, datasources, projects, isLayer
     }
   }, [datasources, isLayerVisible, layers])
 
-  return <div ref={mapElement} className={className} />
+  const handleDrawPoint = () => {
+    if (drawRef.current) {
+      drawRef.current.changeMode('draw_point')
+      setIsDrawing(true)
+    }
+  }
+
+  const handleDrawLineString = () => {
+    if (drawRef.current) {
+      drawRef.current.changeMode('draw_line_string')
+      setIsDrawing(true)
+    }
+  }
+
+  const handleDrawPolygon = () => {
+    if (drawRef.current) {
+      drawRef.current.changeMode('draw_polygon')
+      setIsDrawing(true)
+    }
+  }
+
+  const handleCancelDraw = () => {
+    if (drawRef.current) {
+      drawRef.current.changeMode('simple_select')
+      drawRef.current.deleteAll()
+      setIsDrawing(false)
+    }
+  }
+
+  return (
+    <div className="relative h-full w-full">
+      <div ref={mapElement} className={className} />
+
+      <div className="absolute right-4 top-4">
+        <DrawControls
+          onDrawPoint={handleDrawPoint}
+          onDrawLineString={handleDrawLineString}
+          onDrawPolygon={handleDrawPolygon}
+          onCancelDraw={handleCancelDraw}
+          isDrawing={isDrawing}
+        />
+      </div>
+
+      <CreateLayerModal
+        isOpen={isLayerModalOpen}
+        geometry={drawnGeometry}
+        projects={projects}
+        onClose={() => {
+          setIsLayerModalOpen(false)
+          setDrawnGeometry(null)
+        }}
+        onSuccess={() => {
+          setDrawnGeometry(null)
+        }}
+      />
+    </div>
+  )
 }

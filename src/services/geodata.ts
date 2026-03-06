@@ -127,6 +127,38 @@ export const geodataService = {
     }))
   },
 
+  async createLayer(data: {
+    name: string
+    description: string
+    project_id: string
+    datasource_id: string
+    style_config?: Record<string, unknown>
+    metadata?: Record<string, unknown>
+  }) {
+    const response = await api.post<RawLayer>('/layers/', {
+      name: data.name,
+      description: data.description,
+      project: data.project_id,
+      datasource: data.datasource_id,
+      visibility: true,
+      z_index: 0,
+      style_config: data.style_config ?? {},
+      metadata: data.metadata ?? {},
+    })
+
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      project_id: toId(response.data.project),
+      datasource_id: toId(response.data.datasource),
+      visibility: response.data.visibility,
+      z_index: response.data.z_index,
+      style_config: response.data.style_config ?? {},
+      metadata: response.data.metadata ?? {},
+    } satisfies Layer
+  },
+
   async fetchDatasources() {
     const datasources = await fetchAllPages<RawDatasource>('/datasources/')
     return datasources.map<Datasource>((datasource) => ({
@@ -138,5 +170,32 @@ export const geodataService = {
       metadata: datasource.metadata ?? {},
       is_public: datasource.is_public,
     }))
+  },
+
+  async createDatasource(data: {
+    name: string
+    description: string
+    datasource_type: Datasource['datasource_type']
+    storage_url: string
+    metadata?: Record<string, unknown>
+  }) {
+    const response = await api.post<RawDatasource>('/datasources/', {
+      name: data.name,
+      description: data.description,
+      datasource_type: data.datasource_type,
+      storage_url: data.storage_url,
+      metadata: data.metadata ?? {},
+      is_public: false,
+    })
+
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      datasource_type: response.data.datasource_type,
+      storage_url: response.data.storage_url,
+      metadata: response.data.metadata ?? {},
+      is_public: response.data.is_public,
+    } satisfies Datasource
   },
 }
