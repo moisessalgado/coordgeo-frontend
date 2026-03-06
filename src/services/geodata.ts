@@ -96,6 +96,22 @@ export const geodataService = {
     }))
   },
 
+  async createProject(data: { name: string; description: string; geometry?: ProjectGeometry }) {
+    const response = await api.post<RawProject>('/projects/', {
+      name: data.name,
+      description: data.description,
+      geometry: data.geometry ?? null,
+    })
+    
+    return {
+      id: toId(response.data.id),
+      name: response.data.name,
+      description: response.data.description,
+      geometry: parseProjectGeometry(response.data.geometry),
+      created_at: response.data.created_at,
+    } satisfies Project
+  },
+
   async fetchLayers() {
     const layers = await fetchAllPages<RawLayer>('/layers/')
     return layers.map<Layer>((layer) => ({

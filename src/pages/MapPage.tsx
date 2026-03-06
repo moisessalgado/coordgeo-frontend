@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LayerToggle } from '../components/Map/LayerToggle.tsx'
 import { MapContainer } from '../components/Map/MapContainer.tsx'
+import { ProjectList } from '../components/Projects/ProjectList.tsx'
+import { CreateProjectModal } from '../components/Projects/CreateProjectModal.tsx'
 import { getApiFailureTelemetry } from '../services/apiErrors.ts'
 import { useAuthStore } from '../state/authStore.ts'
 import { useMapStore } from '../state/mapStore.ts'
@@ -10,6 +12,7 @@ import { useOrgStore } from '../state/orgStore.ts'
 export function MapPage() {
   const navigate = useNavigate()
   const [apiFailureCount, setApiFailureCount] = useState(() => getApiFailureTelemetry().totalFailures)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const fetchMapData = useMapStore((state) => state.fetchMapData)
   const isLoading = useMapStore((state) => state.isLoading)
@@ -72,6 +75,8 @@ export function MapPage() {
 
         <p className="text-xs text-slate-500">Falhas de API (sessão): {apiFailureCount}</p>
 
+        <ProjectList projects={projects} onCreateClick={() => setIsCreateModalOpen(true)} />
+
         <LayerToggle layers={layers} isLayerVisible={isLayerVisible} onToggle={toggleLayerVisibility} />
 
         <div className="mt-auto space-y-2">
@@ -122,6 +127,11 @@ export function MapPage() {
           </div>
         ) : null}
       </section>
+
+      <CreateProjectModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </main>
   )
 }

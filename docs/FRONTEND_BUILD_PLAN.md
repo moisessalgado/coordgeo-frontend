@@ -110,17 +110,23 @@ Critério de conclusão: ✅ PASSED
 
 ---
 
-### ⏳ Fase J — CRUD de Dados (PRÓXIMO)
-**Status: POR FAZER**
+### ⏳ Fase J — CRUD de Dados (EM ANDAMENTO)
+**Status: Sprint 1 CONCLUÍDA**
 
 Objetivo: usuários conseguem criar e editar projetos, layers e datasources.
 
 Entregas por sprint:
-1. **Sprint 1 — Criar Projeto**
-   - Modal/form para criar novo projeto
-   - POST `/api/v1/projects/` com name, description, geometry
-   - Refresh da lista após criação
-   - Toast de sucesso/erro
+1. **✅ Sprint 1 — Criar Projeto (CONCLUÍDO)**
+   - ✅ Modal/form para criar novo projeto
+   - ✅ POST `/api/v1/projects/` com name, description, geometry
+   - ✅ Refresh da lista após criação
+   - ✅ Feedback visual de sucesso/erro
+   - **Componentes criados:**
+     - `ProjectForm.tsx`: Formulário reutilizável com validação
+     - `CreateProjectModal.tsx`: Modal container com integração API
+     - `ProjectList.tsx`: Lista de projetos na sidebar com botão "Novo"
+   - **Serviço:** Método `createProject()` adicionado ao `geodataService`
+   - **Integração:** MapPage atualizado com ProjectList e modal
 
 2. **Sprint 2 — Criar Datasource**
    - Modal para criar novo datasource
