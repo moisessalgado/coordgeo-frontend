@@ -39,7 +39,7 @@ export function Navbar() {
         <Link to="/" className="flex items-center gap-3">
           <img
             src="/brand/coordgeo-mark.png"
-            alt="CoordGeo"
+            alt="Coordenada Geo"
             className="h-12 w-12 object-contain"
           />
           <span className="text-lg font-semibold tracking-tight text-slate-900">

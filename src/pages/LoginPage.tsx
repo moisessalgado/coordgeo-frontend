@@ -57,10 +57,10 @@ export function LoginPage() {
         <div className="mb-6 flex flex-col items-center text-center">
           <img
             src="/brand/coordgeo-mark.png"
-            alt="CoordGeo"
+            alt="Coordenada Geo"
             className="mb-4 h-20 w-20 object-contain"
           />
-          <h1 className="mb-1 text-2xl font-semibold text-slate-900">CoordGeo</h1>
+          <h1 className="mb-1 text-2xl font-semibold text-slate-900">Coordenada Geo</h1>
           <p className="text-sm text-slate-600">Acesse sua conta para continuar.</p>
         </div>
         

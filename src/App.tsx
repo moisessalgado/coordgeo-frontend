@@ -52,7 +52,7 @@ function RequireOrg({ children }: { children: ReactNode }) {
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
           <img
             src="/brand/coordgeo-mark.png"
-            alt="CoordGeo"
+            alt="Coordenada Geo"
             className="h-16 w-16 object-contain"
           />
           <p className="text-sm text-slate-600">Preparando sua organização...</p>
@@ -117,7 +117,7 @@ function App() {
                       <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
                         <img
                           src="/brand/coordgeo-mark.png"
-                          alt="CoordGeo"
+                          alt="Coordenada Geo"
                           className="h-16 w-16 object-contain"
                         />
                         <p className="text-sm text-slate-600">Carregando mapa...</p>
@@ -142,7 +142,7 @@ function App() {
                       <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
                         <img
                           src="/brand/coordgeo-mark.png"
-                          alt="CoordGeo"
+                          alt="Coordenada Geo"
                           className="h-16 w-16 object-contain"
                         />
                         <p className="text-sm text-slate-600">Carregando configurações...</p>

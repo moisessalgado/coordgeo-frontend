@@ -54,12 +54,12 @@ export function SignupPage() {
           <div className="mb-6 flex flex-col items-center text-center">
             <img
               src="/brand/coordgeo-mark.png"
-              alt="CoordGeo"
+              alt="Coordenada Geo"
               className="mb-4 h-20 w-20 object-contain"
             />
             <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
             <p className="text-sm text-slate-600">
-              Comece a usar o CoordGeo gratuitamente.
+              Comece a usar o Coordenada Geo gratuitamente.
             </p>
           </div>
           <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
