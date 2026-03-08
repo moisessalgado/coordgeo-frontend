@@ -30,6 +30,8 @@ npm install
 - **Signup page**: formulário de criação de conta com validação
 - **Fluxo completo onboarding**: landing → signup → login → auto-select org → mapa
 - **Freemium automático**: usuários novos recebem org padrão invisível + auto-seleção
+- **Página de configurações**: `/settings` com gestão de projetos, camadas e datasources
+- **Página de upgrade**: `/upgrade` para fluxo de plano PRO
 
 ### ⏳ Próximos focos (Fase J em diante)
 1. **CRUD de dados** — Criar/editar projetos, layers e datasources
@@ -95,7 +97,8 @@ Critério de conclusão: ✅ PASSED
 **Status: FEITO**
 
 Entregas:
-- ✅ Rotas: `/`, `/signup`, `/login`, `/select-org`, `/map`
+- ✅ Rotas principais: `/`, `/signup`, `/login`, `/select-org`, `/map`
+- ✅ Rotas adicionais: `/settings`, `/upgrade`
 - ✅ Redirect inteligente baseado em autenticação + organização
 - ✅ Landing page com botões de Login e Criar conta
 - ✅ Auto-seleção de org padrão para freemium
@@ -188,7 +191,7 @@ Critério de conclusão: ✅ Sprint 1, 2, 3 e 4 CONCLUÍDAS
 ---
 
 ### ⏳ Fase K — Melhorias de UX (Mapa + UI) (EM ANDAMENTO)
-**Status: Sprint 1 iniciada**
+**Status: Sprint 1 concluída; Sprints 2-5 em backlog**
 
 Objetivo: melhorar experiência de uso e interação.
 
@@ -210,22 +213,22 @@ Entregas por sprint:
      - Botão zoom em lado de cada projeto (se tiver geometria)
      - Calcular bounds automático e fazer fitBounds com padding
 
-2. **Sprint 2 — Busca e filtro**
+2. **⏸️ Sprint 2 — Busca e filtro (BACKLOG)**
    - Busca por nome de projeto/layer
    - Filtro por tipo de datasource
    - Aplicar filtros em real-time na UI
 
-3. **Sprint 3 — Dashboard melhorado**
+3. **⏸️ Sprint 3 — Dashboard melhorado (BACKLOG)**
    - Stats de projetos, layers, datasources por org
    - Cards com informações resumidas
    - Miniatura/preview de layers
 
-4. **Sprint 4 — Responsividade mobile**
+4. **⏸️ Sprint 4 — Responsividade mobile (BACKLOG)**
    - Layout colapsável em mobile
    - Touch-friendly controls
    - Responsive sidebar
 
-5. **Sprint 5 — Temas e acessibilidade**
+5. **⏸️ Sprint 5 — Temas e acessibilidade (BACKLOG)**
    - Dark mode
    - Melhor contraste (WCAG AA)
    - ARIA labels
@@ -246,9 +249,9 @@ Critério de conclusão Sprint 1: ✅ PASSED
 - **Fase H**: Landing + Signup (completo)
 - **Fase I**: Fluxo completo onboarding (completo)
 
-### 🎯 Próximo Foco: Fase J — CRUD de Dados
+### 🎯 Próximo Foco: Fase K — Sprint 2 (Busca e filtros)
 
-Recomendação: Começar por **Criar Projeto** (Sprint 1) para validar padrão e depois evoluir para datasources e layers.
+Recomendação: evoluir UX com busca/filtro em tempo real para projetos, layers e datasources, aproveitando o CRUD já implementado.
 
 **Stack para CRUD:**
 - Modal/Dialog components (pode usar headless UI ou criar simples com Tailwind)
@@ -298,7 +301,7 @@ Recomendação: Começar por **Criar Projeto** (Sprint 1) para validar padrão e
 
 ### Fase G — Qualidade contínua ✅
 - Build e lint operacionais
-- Testes unitários configurados (Vitest)
+- Dependências de teste (Vitest) adicionadas; suíte ainda não implementada
 
 </details>
 
@@ -306,24 +309,21 @@ Recomendação: Começar por **Criar Projeto** (Sprint 1) para validar padrão e
 
 ## 6) Próximo passo operacional
 
-**Ação recomendada agora**: iniciar **Fase J Sprint 1** — criar modal/form para novos projetos.
+**Ação recomendada agora**: iniciar **Fase K Sprint 2** — busca e filtros em tempo real.
 
 **Estrutura esperada:**
 ```
 src/components/
 ├── Projects/
-│   ├── ProjectForm.tsx         (novo)
-│   ├── CreateProjectModal.tsx  (novo)
-│   └── ProjectList.tsx         (refactor do existente)
+│   └── ProjectList.tsx         (adicionar busca/filtros)
 ├── Map/
 │   ├── MapContainer.tsx
-│   └── LayerToggle.tsx
+│   └── LayerToggle.tsx         (filtro de layers)
 └── ...
 ```
 
 **API a ser usada:**
-- `POST /api/v1/projects/` com { name, description, geometry, organization }
-- Retorna novo projeto com ID e detalhes
-- Refresh mapStore.fetchMapData() após sucesso
-- Toast feedback (sucesso/erro)
+- `GET /api/v1/projects/`, `GET /api/v1/layers/`, `GET /api/v1/datasources/`
+- Filtragem client-side inicial com dados já carregados
+- Evoluir para filtros de API no backend quando disponível
 
