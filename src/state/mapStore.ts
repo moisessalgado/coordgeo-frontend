@@ -111,9 +111,23 @@ export const useMapStore = create<MapState>((set, get) => ({
         geodataService.fetchDatasources(),
       ])
 
-      const hiddenLayerIds = new Set(
+      const currentHiddenLayerIds = get().hiddenLayerIds
+      const backendHiddenLayerIds = new Set(
         layers.filter((layer) => !layer.visibility).map((layer) => layer.id),
       )
+      const validLayerIds = new Set(layers.map((layer) => layer.id))
+      const hiddenLayerIds = new Set<string>()
+
+      // Preserve user-toggled visibility locally for layers that still exist.
+      currentHiddenLayerIds.forEach((layerId) => {
+        if (validLayerIds.has(layerId)) {
+          hiddenLayerIds.add(layerId)
+        }
+      })
+
+      backendHiddenLayerIds.forEach((layerId) => {
+        hiddenLayerIds.add(layerId)
+      })
 
       set({
         projects,

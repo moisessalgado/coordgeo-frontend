@@ -1,6 +1,68 @@
 @import "tailwindcss";
 @import "maplibre-gl-draw/dist/mapbox-gl-draw.css";
 
+@layer components {
+	.sidebar-card {
+		@apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
+	}
+
+	.sidebar-card-soft {
+		@apply rounded-xl border border-slate-200 bg-slate-50 p-4;
+	}
+
+	.sidebar-title {
+		@apply text-sm font-semibold text-slate-900;
+	}
+
+	.sidebar-label {
+		@apply text-xs font-semibold uppercase tracking-[0.14em] text-slate-500;
+	}
+
+	.sidebar-muted {
+		@apply text-xs text-slate-500;
+	}
+
+	.btn-ui {
+		@apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+	}
+
+	.btn-ui-primary {
+		@apply inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+
+	.btn-ui-secondary {
+		@apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+
+	.btn-ui-subtle {
+		@apply inline-flex min-h-9 min-w-9 items-center justify-center rounded-md px-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+
+	.btn-ui-danger {
+		@apply inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+
+	.input-ui {
+		@apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200;
+	}
+
+	.range-ui {
+		@apply h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200;
+	}
+
+	.range-ui::-webkit-slider-thumb {
+		@apply h-4 w-4 appearance-none rounded-full bg-slate-900;
+	}
+
+	.range-ui::-moz-range-thumb {
+		@apply h-4 w-4 rounded-full border-0 bg-slate-900;
+	}
+
+	.focus-ui {
+		@apply outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-1;
+	}
+}
+
 html {
 	scrollbar-gutter: stable;
 }
