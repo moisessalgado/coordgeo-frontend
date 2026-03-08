@@ -3,13 +3,14 @@ import { useState, type FormEvent } from 'react'
 interface SignupFormProps {
   isLoading: boolean
   error: string | null
-  onSubmit: (email: string, password: string) => Promise<void>
+  onSubmit: (email: string, password: string, plan: 'free' | 'pro') => Promise<void>
 }
 
 export function SignupForm({ isLoading, error, onSubmit }: SignupFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [plan, setPlan] = useState<'free' | 'pro'>('free')
   const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -26,7 +27,7 @@ export function SignupForm({ isLoading, error, onSubmit }: SignupFormProps) {
       return
     }
 
-    await onSubmit(email, password)
+    await onSubmit(email, password, plan)
   }
 
   return (
@@ -44,6 +45,45 @@ export function SignupForm({ isLoading, error, onSubmit }: SignupFormProps) {
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-500"
           placeholder="seu.email@empresa.com"
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Plano inicial</label>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <label className="cursor-pointer rounded-lg border border-slate-300 bg-white p-3 transition hover:border-slate-400">
+            <div className="flex items-start gap-2">
+              <input
+                type="radio"
+                name="plan"
+                value="free"
+                checked={plan === 'free'}
+                onChange={() => setPlan('free')}
+                className="mt-1"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">FREE</p>
+                <p className="text-xs text-slate-600">Comece sem custo e faça upgrade depois.</p>
+              </div>
+            </div>
+          </label>
+
+          <label className="cursor-pointer rounded-lg border border-slate-300 bg-white p-3 transition hover:border-slate-400">
+            <div className="flex items-start gap-2">
+              <input
+                type="radio"
+                name="plan"
+                value="pro"
+                checked={plan === 'pro'}
+                onChange={() => setPlan('pro')}
+                className="mt-1"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">PRO</p>
+                <p className="text-xs text-slate-600">Cadastre-se direto com os recursos do plano PRO.</p>
+              </div>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div className="space-y-2">

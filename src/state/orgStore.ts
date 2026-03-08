@@ -53,6 +53,14 @@ const pickPreferredOrganization = (organizations: Organization[]) => {
   return organizations.find((organization) => organization.org_type === 'personal') ?? null
 }
 
+const isFreemiumUser = (organizations: Organization[]) => {
+  if (organizations.length === 0) {
+    return true
+  }
+
+  return organizations.every((organization) => organization.plan !== 'pro')
+}
+
 export const useOrgStore = create<OrgState>((set, get) => ({
   activeOrgId: safeStorageGet(ORG_KEY),
   organizations: [],
@@ -85,7 +93,7 @@ export const useOrgStore = create<OrgState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const organizations = await authService.fetchUserOrganizations()
-      const isFreemium = organizations.length === 0
+      const isFreemium = isFreemiumUser(organizations)
       set({ organizations, isFreemium })
     } catch (error) {
       set({
@@ -105,7 +113,11 @@ export const useOrgStore = create<OrgState>((set, get) => ({
     try {
       const defaultOrg = await authService.fetchDefaultOrganization()
       safeStorageSet(ORG_KEY, defaultOrg.id)
-      set({ activeOrgId: defaultOrg.id, isFreemium: true })
+      set({
+        activeOrgId: defaultOrg.id,
+        organizations: [defaultOrg],
+        isFreemium: defaultOrg.plan !== 'pro',
+      })
     } catch (error) {
       set({
         error: getUserFacingApiError(error, {
@@ -137,7 +149,7 @@ export const useOrgStore = create<OrgState>((set, get) => ({
         set({
           activeOrgId: preferredOrganization.id,
           organizations,
-          isFreemium: organizations.length === 0,
+          isFreemium: isFreemiumUser(organizations),
         })
         return preferredOrganization.id
       }
@@ -147,7 +159,7 @@ export const useOrgStore = create<OrgState>((set, get) => ({
       set({
         activeOrgId: defaultOrg.id,
         organizations,
-        isFreemium: organizations.length === 0,
+        isFreemium: isFreemiumUser(organizations),
       })
       return defaultOrg.id
     } catch (error) {

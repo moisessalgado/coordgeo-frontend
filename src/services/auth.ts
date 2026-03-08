@@ -10,9 +10,11 @@ interface SignupResponse {
   username: string
 }
 
+type SignupPlan = 'free' | 'pro'
+
 export const authService = {
-  async signup(email: string, password: string) {
-    const response = await api.post<SignupResponse>('/auth/register/', { email, password })
+  async signup(email: string, password: string, plan: SignupPlan = 'free') {
+    const response = await api.post<SignupResponse>('/auth/register/', { email, password, plan })
     return response.data
   },
 

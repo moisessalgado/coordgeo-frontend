@@ -14,17 +14,12 @@ export function LoginPage() {
   const clearError = useAuthStore((state) => state.clearError)
   const accessToken = useAuthStore((state) => state.accessToken)
   const activeOrgId = useOrgStore((state) => state.activeOrgId)
+  const isFreemium = useOrgStore((state) => state.isFreemium)
   const clearOrgSession = useOrgStore((state) => state.clearOrgSession)
-  const organizations = useOrgStore((state) => state.organizations)
   const resolveAndSetActiveOrg = useOrgStore((state) => state.resolveAndSetActiveOrg)
 
   const isLoggedIn = !!accessToken
-  
-  // Check if user has PRO/ENTERPRISE plan
-  const hasPremiumPlan = organizations.some(
-    (org) => org.plan === 'pro' || org.plan === 'enterprise'
-  )
-  const shouldShowUpgrade = !hasPremiumPlan
+  const shouldShowUpgrade = isLoggedIn && isFreemium
 
   const handleLogout = () => {
     logout()
@@ -105,7 +100,7 @@ export function LoginPage() {
                 className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
               >
                 <span>⭐</span>
-                <span>Aderir ao Plano PRO</span>
+                  <span>Aderir ao plano PRO</span>
               </Link>
             </div>
           )}

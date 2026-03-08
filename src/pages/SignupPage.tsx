@@ -15,14 +15,16 @@ export function SignupPage() {
   const resolveAndSetActiveOrg = useOrgStore((state) => state.resolveAndSetActiveOrg)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free')
 
-  const handleSubmit = async (email: string, password: string) => {
+  const handleSubmit = async (email: string, password: string, plan: 'free' | 'pro') => {
     setError(null)
     setIsLoading(true)
+    setSelectedPlan(plan)
 
     try {
       clearOrgSession()
-      await authService.signup(email, password)
+      await authService.signup(email, password, plan)
       
       // Fazer login automaticamente após signup
       await loginAfterSignup(email, password)
@@ -59,11 +61,23 @@ export function SignupPage() {
             />
             <h1 className="mb-1 text-2xl font-semibold text-slate-900">Criar conta</h1>
             <p className="text-sm text-slate-600">
-              Comece a usar o Coordenada Geo gratuitamente.
+              Escolha seu plano e comece a usar o Coordenada Geo.
             </p>
           </div>
           <SignupForm isLoading={isLoading} error={error} onSubmit={handleSubmit} />
           <div className="mt-6 space-y-3">
+            {selectedPlan === 'free' && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center">
+                <p className="text-sm text-blue-900">No FREE, você pode aderir ao PRO quando quiser.</p>
+                <Link
+                  to="/upgrade"
+                  className="mt-2 inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700"
+                >
+                  <span>⭐</span>
+                  <span>Aderir ao plano PRO</span>
+                </Link>
+              </div>
+            )}
             <div className="text-center text-sm text-slate-600">
               Já tem uma conta?{' '}
               <Link to="/login" className="font-medium text-slate-900 hover:underline">
